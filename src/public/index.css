@@ -1,0 +1,23 @@
+div {
+    border: solid 2px red !important;
+    padding : 10px;
+    margin : 1px;
+}
+
+div#containerDiv {
+    border: none !important;
+}
+
+div#otherDiv {
+    margin-left: 20px;
+}
+
+div#agendaDiv {
+    margin-left : 10px;
+}
+
+
+
+html {
+    color : blue;
+}
