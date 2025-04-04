@@ -1,0 +1,41 @@
+div#loginFrame{
+    border: 2px solid black;
+    box-sizing: border-box;
+    width: 500px;
+}
+
+div#loginFrame *{
+    margin-bottom: 10px;
+    display: block;
+    width: 100%; 
+}
+
+div#center{
+    align-items: center;
+}
+
+#tabs{
+    overflow: hidden;
+}
+
+#tabs button{
+    float: left;
+    outline: none;
+    transition: 0.3s;
+}
+
+label{
+    text-align: center;
+}
+
+div#container{
+    border: 2px solid yellow;
+    text-align: center;
+}
+
+.tabcontent{
+    display: none;
+}
+
+
+

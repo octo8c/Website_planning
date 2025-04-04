@@ -2,27 +2,55 @@
 <html lang="fr">
 
 <head>
-    <link rel="stylesheet" href="html3.css">
+    <link rel="stylesheet" href="log.css">
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="script2.js"></script>
+    <script src="log.js"></script>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
 <body>
     <div class="container">
+        <div class="jumbotron">
+            <div id="containerhead">
+                Affichage Test
+            </div>
+        </div>
         <div class="row justify-content-center" id="row-center">
             <div class="container d-flex justify-content-center align-items-center">
-                <form>
-                    <div class="col-sm-4">
-                        <label id="username">Username</label>
-                        <input type="text" id="user">
-                        <label id="mdp">Mot de passe</label>
-                        <input type="password" id="pass">
-                        <input type="submit" name="Connexion">
+                <div id="center">
+                    <div class="tab" id="tabs">
+                        <button class="tablinks">Inscription</button>
+                        <button class="tablinks">Connexion</button>
                     </div>
-                </form>
+                    <div id="Connexion" class="tabcontent">
+                        <form action="/login/addressejsplaquel" method="POST">
+                            <div class="col-sm-6" id="loginFrame">
+                                <label id="username">Username</label>
+                                <input type="text" id="user">
+                                <label id="mdp">Mot de passe</label>
+                                <input type="password" id="pass">
+                                <input type="submit" id="submitLogin" value="Connexion">
+                                <a href="missed.html">Mot de passe oubliée</a>
+                            </div>
+                        </form>
+                    </div>
+                    <div id="Inscription" class="tabcontent">
+                        <form action="/signup/autreadresse" method="POST">
+                            <div class="col-sm-6" id="loginFrame">
+                                <label id="username">Username</label>
+                                <input type="text" id="user">
+                                <label id="mdp">Mot de passe</label>
+                                <input type="password" id="pass">
+                                <label id="check">Confirmation</label>
+                                <input type="password" id="check">
+                                <input type="submit" id="submitLogin" value="Inscription">
+                                <a href="missed.html">Mot de passe oubliée</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
