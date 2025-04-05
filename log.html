@@ -21,8 +21,8 @@
             <div class="container d-flex justify-content-center align-items-center">
                 <div id="center">
                     <div class="tab" id="tabs">
-                        <button class="tablinks">Inscription</button>
-                        <button class="tablinks">Connexion</button>
+                        <button class="tablinks" id="inscr">Inscription</button>
+                        <button class="tablinks" id="conex">Connexion</button>
                     </div>
                     <div id="Connexion" class="tabcontent">
                         <form action="/login/addressejsplaquel" method="POST">
@@ -32,7 +32,7 @@
                                 <label id="mdp">Mot de passe</label>
                                 <input type="password" id="pass">
                                 <input type="submit" id="submitLogin" value="Connexion">
-                                <a href="missed.html">Mot de passe oubliée</a>
+                                <a href="" id="lostPassword">Mot de passe oubliée</a>
                             </div>
                         </form>
                     </div>
@@ -46,7 +46,15 @@
                                 <label id="check">Confirmation</label>
                                 <input type="password" id="check">
                                 <input type="submit" id="submitLogin" value="Inscription">
-                                <a href="missed.html">Mot de passe oubliée</a>
+                            </div>
+                        </form>
+                    </div>
+                    <div id="mdpOublie" class="tabcontent">
+                        <form action="/mdpOublie/" method="post">
+                            <div class="col-sm-6" id="loginFrame">
+                                <label id="username">Username</label>
+                                <input type="text" id="user">
+                                <input type="submit" id="submitMissed" value="Demande">
                             </div>
                         </form>
                     </div>
