@@ -3,8 +3,13 @@ $(document).ready(function(){
         console.log("Tentaive de login(Il manque le moment ou on fait le login)");
     });
 
+
     function existsUsername(username){
         console.log("FAIREE");
+    }
+
+    function checkPassword(username,password){
+        
     }
     var tabs = $("#Inscription,#Connexion,#mdpOublie");
     var current = "#Connexion";
@@ -17,8 +22,6 @@ $(document).ready(function(){
 
         console.log("Coucou c'est moi ");
     }
-
-    
 
     $("button#inscr").on("click",() =>switchTabs('Inscription'));
     $("button#conex").on("click",() => switchTabs('Connexion'));
