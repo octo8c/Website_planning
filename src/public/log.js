@@ -29,6 +29,5 @@ $(document).ready(function(){
         e.preventDefault();
         switchTabs('mdpOublie');
      });
-    console.log("Affichage que c'est bien arrive jusque la ");
     $("div#Connexion").css('display','block');
 })

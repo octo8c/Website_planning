@@ -28,23 +28,23 @@
                         <form action="/login/addressejsplaquel" method="POST">
                             <div class="col-sm-6" id="loginFrame">
                                 <label id="username">Username</label>
-                                <input type="text" id="user">
+                                <input type="text" id="user" name="username">
                                 <label id="mdp">Mot de passe</label>
-                                <input type="password" id="pass">
+                                <input type="password" id="pass" name="password">
                                 <input type="submit" id="submitLogin" value="Connexion">
                                 <a href="" id="lostPassword">Mot de passe oubliée</a>
                             </div>
                         </form>
                     </div>
                     <div id="Inscription" class="tabcontent">
-                        <form action="/signup/autreadresse" method="POST">
+                        <form action="/inscription" method="POST">
                             <div class="col-sm-6" id="loginFrame">
                                 <label id="username">Username</label>
-                                <input type="text" id="user">
+                                <input type="text" id="user" name = "username">
                                 <label id="mdp">Mot de passe</label>
-                                <input type="password" id="pass">
+                                <input type="password" id="pass" name="password">
                                 <label id="check">Confirmation</label>
-                                <input type="password" id="check">
+                                <input type="password" id="check" name="check">
                                 <input type="submit" id="submitLogin" value="Inscription">
                             </div>
                         </form>
@@ -53,7 +53,7 @@
                         <form action="/mdpOublie/" method="post">
                             <div class="col-sm-6" id="loginFrame">
                                 <label id="username">Username</label>
-                                <input type="text" id="user">
+                                <input type="text" id="user" name="username">
                                 <input type="submit" id="submitMissed" value="Demande">
                             </div>
                         </form>

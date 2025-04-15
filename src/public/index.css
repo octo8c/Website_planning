@@ -1,0 +1,26 @@
+header {
+    border: solid 2px red !important;
+    padding : 10px;
+    margin : 1px;
+}
+
+div#containerDiv {
+    border: none !important;
+}
+
+div#otherDiv {
+    margin-left: 20px;
+}
+
+div#agendaDiv {
+    border : 2px solid red;
+    margin-left : 10px;
+}
+
+#voirReunionDiv {
+    border : 2px solid red;
+}
+
+html {
+    color : blue;
+}
