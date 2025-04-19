@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+        <link href="/index.css" rel="stylesheet">
+        <link href="/calendar.css" rel="stylesheet">
+        <title> First Agenda </title>
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+        <script src="index.js"></script>
+    </head>
+
+    <body>
+        <header class="row">
+            <div id="otherDiv" class="col-md-6"> </div>
+
+            <div id="creerReunionDiv" class="col-md-2">
+                <button> CREER UNE REUNION </button>
+            </div>
+
+            <div id="connexionDiv" class="offset-md-1 col-md-2">
+                <button> CONNEXION </button>
+            </div> 
+        </header>            
+        <div id="containerDiv" class="row no-gutters">
+            <div id="agendaDiv" class="col-md-9"> 
+                <div class="agenda-header">
+                    <button id="prevMonth">❮</button>
+                    <h2 id="monthYear">Avril 2025</h2>
+                    <button id="nextMonth">❯</button>
+                    <button id="today"> Aujourd'hui </button>
+                </div>
+
+                <ul class="jour-agenda row" id="nom-jour">
+                    <li>Lundi</li>
+                    <li>Mardi</li>
+                    <li>Mercredi</li>
+                    <li>Jeudi</li>
+                    <li>Vendredi</li>
+                    <li>Samedi</li>
+                    <li>Dimanche</li>
+                </ul>
+                <ul class="row" id="numero-jour"></ul> <!-- est rempli par le js-->
+            </div>
+            <div id="voirReunionDiv" class="col-md-3"></div> 
+        </div>
+
+
+        <!-- Code pour boostrap, a laisser à la fin du body-->
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+            <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+        </body>
+    </body>
+</html>
+
+
