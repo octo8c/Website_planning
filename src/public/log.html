@@ -11,56 +11,32 @@
 </head>
 
 <body>
-    <div class="container">
-        <div class="jumbotron">
-            <div id="containerhead">
-                Affichage Test
-            </div>
+
+    <div id="generalContainer">
+        <div id="containerhead">
+            <h1 id="id_title"> Page d'identification </h1>
         </div>
-        <div class="row justify-content-center" id="row-center">
-            <div class="container d-flex justify-content-center align-items-center">
-                <div id="center">
-                    <div class="tab" id="tabs">
-                        <button class="tablinks" id="inscr">Inscription</button>
-                        <button class="tablinks" id="conex">Connexion</button>
-                    </div>
-                    <div id="Connexion" class="tabcontent">
-                        <form action="/login/addressejsplaquel" method="POST">
-                            <div class="col-sm-6" id="loginFrame">
-                                <label id="username">Username</label>
-                                <input type="text" id="user" name="username">
-                                <label id="mdp">Mot de passe</label>
-                                <input type="password" id="pass" name="password">
-                                <input type="submit" id="submitLogin" value="Connexion">
-                                <a href="" id="lostPassword">Mot de passe oubliée</a>
-                            </div>
-                        </form>
-                    </div>
-                    <div id="Inscription" class="tabcontent">
-                        <form action="/inscription" method="POST">
-                            <div class="col-sm-6" id="loginFrame">
-                                <label id="username">Username</label>
-                                <input type="text" id="user" name = "username">
-                                <label id="mdp">Mot de passe</label>
-                                <input type="password" id="pass" name="password">
-                                <label id="check">Confirmation</label>
-                                <input type="password" id="check" name="check">
-                                <input type="submit" id="submitLogin" value="Inscription">
-                            </div>
-                        </form>
-                    </div>
-                    <div id="mdpOublie" class="tabcontent">
-                        <form action="/mdpOublie/" method="post">
-                            <div class="col-sm-6" id="loginFrame">
-                                <label id="username">Username</label>
-                                <input type="text" id="user" name="username">
-                                <input type="submit" id="submitMissed" value="Demande">
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
+
+        <div id="tabs">
+            <button class="tablinks" id="inscr">Inscription</button>
+            <button class="tablinks" id="conex">Connexion</button>
         </div>
+        <form action="/login/addressejsplaquel" method="POST" id="Connexion" class="tabcontent">
+            <input type="text" id="user_log" name="username" placeholder="Username">
+            <input type="password" id="pass_log" name="password" placeholder="Password">
+            <button class="log_button" type="submit"> Connexion </button>
+            <a href="" id="lostPassword">Mot de passe oubliée</a>
+        </form>
+        <form action="/inscription" method="POST" id="Inscription" class="tabcontent">
+            <input type="text" id="user_sub" placeholder="Username">
+            <input type="password" id="pass_sub" placeholder="Password">
+            <input type="password" id="check_sub" placeholder="Confirm password">
+            <button class="log_button" type="submit"> Inscription </button>
+        </form>
+        <form action="/mdpOublie/" method="post" id="mdpOublie" class="tabcontent">
+            <input type="text" id="user_fg" placeholder="Username">
+            <button class="log_button" type="submit"> Demande </button>
+        </form>
     </div>
 </body>
 

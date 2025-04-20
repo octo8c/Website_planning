@@ -1,45 +1,79 @@
-div#loginFrame{
-    border: 2px solid black;
-    box-sizing: border-box;
-    width: 500px;
+html, body {
+    height: 100%;
 }
 
-div#loginFrame *{
-    margin-bottom: 10px;
-    display: block;
-    width: 100%; 
-}
-
-div#center{
+body {
+    background-color: #f3f8fb;
+    display: flex;
+    justify-content: center;
     align-items: center;
 }
 
-#tabs{
-    overflow: hidden;
+input{
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px !important;
+    box-sizing: border-box;
+    border-radius: 5px;
 }
 
-#tabs button{
-    float: left;
-    outline: none;
-    transition: 0.3s;
-}
+#generalContainer {
+    display: flex;
+    background-color: #d3d3d3;
+    border-radius: 10px;
+    width: 70vw;
+    height: 70vh;
 
-label{
-    text-align: center;
-}
-
-div#container{
-    border: 2px solid yellow;
-    text-align: center;
-}
+    flex-direction: column;
+    justify-content: center;
+    gap: 20px;
+} 
 
 .tabcontent{
-    display: none;
+    display: flex;
+    flex-direction: column;
+    visibility:hidden;
+    padding : 0px 20%;
+}
+
+#tabs {
+    align-self: center;
 }
 
 a#lostPassword{
     color: blue;
 }
 
+#containerhead {
+    margin-bottom: 20px;
+    align-self: center;
+}
 
+.selected {
+    background-color: #1f5f85 !important;
+}
+
+.log_button{
+    margin-top : 10px;
+    padding : 10px 0px;
+    border-radius: 5px;
+    background-color: #888888;
+}
+
+/* Même règle que dans calendar.css pour les boutons, on respecte une estétique globale */
+.tablinks {
+    padding: 8px 16px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 6px !important;
+    transition: background-color 0.3s ease;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.tablinks:hover {
+    background-color: #2980b9;
+    cursor: pointer;
+}
 
