@@ -6,10 +6,14 @@ body {
 }
 
 header.row {
-    border: solid 2px red !important;
-    padding : 10px 0px !important;
+    border: solid 2px #ccc !important;
+    border-radius: 6px;
     margin : 1px 0px !important;
     align-items: center;
+}
+
+header div {
+    margin : 1% 0px;
 }
 
 html {
@@ -22,7 +26,6 @@ button {
     color: white;
     border: none;
     border-radius: 6px;
-    transition: background-color 0.3s ease;
     font-weight: bold;
     font-size: 14px;
 }
@@ -32,6 +35,11 @@ button:hover {
     cursor: pointer;
 }
 
+
+#logo {
+    width: 225px;
+    height: auto;
+}
 
 /* ------------ règle de l'agenda ------------ */
 
@@ -55,10 +63,10 @@ button:hover {
     background-color: #4e85dd !important;
 }
 #agendaDiv {
-    border: 2px solid #dcdcdc;
+    border: 2px solid #ccc;
     background-color: #fdfefe;
     padding: 15px;
-    border-radius: 8px;
+    border-radius: 6px;
 }
 .agenda-case {
     padding-left: 0px;
@@ -118,19 +126,21 @@ ul.row {
 
 /* ------------ règle temporaire ------------ */
 #voirReunionDiv {
-    border : 2px solid red;
+    border : 2px solid #ccc;
+    border-radius: 6px;
 }
 
 
 
 /* ------------ règle responsive ------------ */
 @media (max-width: 768px) { 
-    #creerReunionDiv{
-        padding-bottom:10px;
-    }
-
     #monthYear{
         font-size: medium;
+    }
+
+    #logo {
+        height: 50px;
+        width: auto;
     }
 }
 

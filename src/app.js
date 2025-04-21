@@ -5,6 +5,7 @@ const port = 8080;
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
+app.use(express.static('image'));   
 
 const pg = require('pg');
 const pool = new pg.Pool({
