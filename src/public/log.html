@@ -9,8 +9,7 @@
     
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="log.css">
-
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="log.js"></script>
@@ -58,6 +57,22 @@
                 <button class="log_button" type="submit"> Envoyer </button>
             </form>
         </div>
+        <form action="/login" method="POST" id="Connexion" class="tabcontent">
+            <input type="text" id="user_log" name="username" placeholder="Username">
+            <input type="password" id="pass_log" name="password" placeholder="Password">
+            <button class="log_button" type="submit"> Connexion </button>
+            <a href="" id="lostPassword">Mot de passe oubliée</a>
+        </form>
+        <form action="/inscription" method="POST" id="Inscription" class="tabcontent">
+            <input type="text" id="user_sub" placeholder="Username">
+            <input type="password" id="pass_sub" placeholder="Password">
+            <input type="password" id="check_sub" placeholder="Confirm password">
+            <button class="log_button" type="submit"> Inscription </button>
+        </form>
+        <form action="/mdpOublie" method="post" id="mdpOublie" class="tabcontent">
+            <input type="text" id="user_fg" placeholder="Username">
+            <button class="log_button" type="submit"> Demande </button>
+        </form>
     </div>
 </body>
 
