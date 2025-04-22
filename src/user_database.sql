@@ -1,8 +1,8 @@
-drop table if exists user
+drop table if exists utilisateur ;
 
-create table user (
+create table utilisateur (
     username varchar(25) primary key,
-    mot_de_passe password 
+    mot_de_passe varchar(255)
 );
 
-insert into user values (octooo,pw1);
+insert into utilisateur values ('octooo','pw1');
