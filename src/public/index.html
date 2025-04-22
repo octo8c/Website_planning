@@ -8,6 +8,9 @@
     <link href="/index.css" rel="stylesheet">
     <link href="/calendar.css" rel="stylesheet">
     <title> First Agenda </title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <script src="index.js"></script>
 </head>
 
@@ -15,8 +18,17 @@
     <header class="row">
         <div id="otherDiv" class="col-sm-5"> </div>
 
+        <div id="InfoReunion">
+            <input type="date" id="date_reunion">
+            <input type="input" placeholder="Nom de la reunion" id="reunion_name">
+            <button id="create">Creation de la reunion</button>
+            <div id="quitter_creation">
+                <button id="bouton_quitter">Fermer</button>
+            </div>
+        </div>
+
         <div id="creerReunionDiv" class="col-sm-4">
-            <button> CREER UNE REUNION </button>
+            <button id="Create_reunion"> CREER UNE REUNION </button>
         </div>
 
         <div id="connexionDiv" class="col-sm-2">
@@ -90,7 +102,7 @@
 
 
     <!-- Code pour jquery et boostrap, a laisser à la fin du body-->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </body>

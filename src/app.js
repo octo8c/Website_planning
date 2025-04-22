@@ -54,6 +54,14 @@ async function operations(requete,username,motdepasse,mode) {
     else return 0;//Pas ton nom d'utilisateur
 }
 
+async function addReunion(reunion_nom,username,date_reunion){
+    const client = await pool.connect();
+    console.log(date_reunion);
+    client.query("insert into reunion (nom_reunion, creator_username, date_reunion) values ('"+reunion_nom+"','"+username+"','"+date_reunion+"')");
+    client.release();
+    return 0;
+}
+
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, 'public/index.html'));
 });
@@ -96,6 +104,13 @@ app.post("/mdpOublie",(req,res)=>{
         res.send(variable);
     }})
     .catch(erreur =>console.log(erreur.stack));
+});
+
+app.post('/creation',(req,res)=>{
+    console.log("Oui j'ai bien recu la connection");
+    addReunion(req.body.reunion_nom,req.body.username,req.body.date_reunion);
+    console.log("Affichage bien passe");
+    res.send("Connection bien passé");
 });
 
 app.listen(port);

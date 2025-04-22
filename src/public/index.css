@@ -21,6 +21,14 @@ div#agendaDiv {
     border : 2px solid red;
 }
 
+div#InfoReunion{
+    z-index: 1000;
+    width: 50%;
+    height: 50%;
+    align-items: center;
+    display: none;
+}
+
 html {
     color : blue;
 }

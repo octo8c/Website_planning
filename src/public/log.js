@@ -3,10 +3,10 @@ $(document).ready(function(){
     var tabs = $("#Inscription,#Connexion,#mdpOublie");
     var current = "#Connexion";
 
-    /* Fonction dépendant du contexte JQuery */ 
     var to_check_sub = $("#user_sub,#pass_sub");
     var to_check_oub = $("#user_fg");
     var to_check_log = $("#user_log,#pass_log");
+    
     function checkInput(toCheck){
         let remplis = true;
         toCheck.each((index,element)=>{

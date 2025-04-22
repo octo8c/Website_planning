@@ -1,8 +1,27 @@
-drop table if exists utilisateur ;
-
+drop table if exists utilisateur cascade;
+drop table if exists reunion cascade;
+drop table if exists participe cascade;
 create table utilisateur (
     username varchar(25) primary key,
     mot_de_passe varchar(255)
 );
 
-insert into utilisateur values ('octooo','pw1');
+create table reunion (
+    id_reunion serial primary key,
+    nom_reunion varchar(100) not null,
+    creator_username varchar(25) not null,
+    date_reunion date not null,
+    foreign key (creator_username) references utilisateur(username)
+);
+
+create table participe (
+    id_reunion integer not null, 
+    username varchar(25) not null , 
+    primary key (id_reunion , username) ,
+    foreign key (username) references utilisateur(username) on delete cascade, 
+    foreign key (id_reunion) references reunion(id_reunion) on delete cascade
+);
+
+insert into utilisateur values ('titouan','pw1');
+insert into utilisateur values ('edourad','jsp');
+insert into utilisateur values  ('test','1234');
