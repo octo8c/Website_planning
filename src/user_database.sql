@@ -8,9 +8,11 @@ create table utilisateur (
 
 create table reunion (
     id_reunion serial primary key,
+    heure time not null,
     nom_reunion varchar(100) not null,
     creator_username varchar(25) not null,
     date_reunion date not null,
+    duree integer not null,/*La duree en minute de la reunion*/
     foreign key (creator_username) references utilisateur(username)
 );
 
