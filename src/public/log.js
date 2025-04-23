@@ -15,15 +15,11 @@ $(document).ready(function(){
                 remplis = false;
             }
         });
-        if(!remplis){
-            console.log("Les champs ne sont pas remplis");
-        }
         return remplis;
     }
     function switchTabs(value){
         tabs.each(function(){
             $(this).hide();
-            console.log(this);
         });
         if (value != undefined) $("#"+value).show();
     }
@@ -44,12 +40,8 @@ $(document).ready(function(){
     $("#Connexion").on('submit',function(e){
         e.preventDefault();
         if(checkInput(to_check_log)){
-            $.post("http://localhost:8080/login",{username : $("#user_log").val().trim(),password : $("#pass_log").val().trim()},function(error,res){
-                if(res){
-                    console.log("OE bien recu que la connexion a marche");
-                }else{
-                    console.log("Aie nan pas bien recu");
-                }
+            $.post("http://localhost:8080/login",{username : $("#user_log").val().trim(),password : $("#pass_log").val().trim()},function(res){
+                //TODO faire quelque chose apres que la connection est marche
             });
         }
     });
@@ -57,13 +49,8 @@ $(document).ready(function(){
     $("#Inscription").on('submit',function(e){
         e.preventDefault();
         if(checkInput(to_check_sub)){
-            console.log("oui on poste bien");
-            $.post("http://localhost:8080/inscription",{username : $("#user_sub").val().trim(),password : $("#pass_sub").val().trim()},function(error,res){
-                if(res){
-                    console.log("OE bien recu que la connexion a marche");
-                }else{
-                    console.log("Aie nan pas bien recu");
-                }
+            $.post("http://localhost:8080/inscription",{username : $("#user_sub").val().trim(),password : $("#pass_sub").val().trim()},function(res){
+                //TODO faire quelque chose si la connection a marche
             });
         }
     });
@@ -71,12 +58,8 @@ $(document).ready(function(){
     $("#mdpOublie").on('submit',function(e){
         e.preventDefault();
         if(checkInput(to_check_oub)){
-            $.post("http://localhost:8080/mdpOublie",{username : $("#user_fg").val().trim()},function(error,res){
-                if(res){
-                    console.log("OE bien recu que le mdp a été reinialise");
-                }else{
-                    console.log("Aie nan pas bien recu");
-                }
+            $.post("http://localhost:8080/mdpOublie",{username : $("#user_fg").val().trim()},function(res){
+                //TODO faire quelque chose si la demande de mdp est passe
             });
         }
     });

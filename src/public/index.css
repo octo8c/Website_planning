@@ -32,3 +32,8 @@ div#InfoReunion{
 html {
     color : blue;
 }
+
+.fate-out{
+    transition: opacity 1s ease-out;
+    opacity: 0;
+}
