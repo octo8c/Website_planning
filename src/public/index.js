@@ -17,7 +17,7 @@ $(document).ready(function(){
                 let day = parseInt(date_split[2]);
                 //On pars du principe que les dates sont superieur >
                 if(year>date.getFullYear()||month>date.getMonth()|| day>date.getDay()||tempsMax>date.getHours()*60+date.getMinutes()){ // Si la date est bien suéperieur 
-                    $("#voirReunionDiv").append("<a href =\"\"id="+""+">Reunion a :"+row.heure.substring(0,5)+"AM le "+row.date_reunion.substring(0,10)+".Createur : "+row.creator_username+"</a><br>");
+                    $("#voirReunionDiv").append("<a href =\"\"id="+""+">Reunion a "+row.heure.substring(0,5)+" , le "+row.date_reunion.substring(0,10)+".Createur : "+row.creator_username+"</a><br>");
                 }
             }
         });
@@ -25,6 +25,7 @@ $(document).ready(function(){
 
     $("#Create_reunion").on('click',function(){
         $("div#InfoReunion").css("display","inline");
+        console.log("Test");
     });
 
     $("button#bouton_quitter").on('click',function(){
