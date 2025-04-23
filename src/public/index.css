@@ -16,10 +16,22 @@ header div {
     margin : 1% 0px;
 }
 
+div#InfoReunion{
+    z-index: 1000;
+    width: 50%;
+    height: 50%;
+    align-items: center;
+    display: none;
+}
+
 html {
     color : blue;
 }
 
+.fate-out{
+    transition: opacity 1s ease-out;
+    opacity: 0;
+}
 button {
     padding: 8px 16px;
     background-color: #3498db;
