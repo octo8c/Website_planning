@@ -40,39 +40,23 @@
                 <button class="tablinks" id="inscr">Inscription</button>
                 <button class="tablinks" id="conex">Connexion</button>
             </div>
-            <form action="/login/addressejsplaquel" method="POST" id="Connexion" class="tabcontent">
+            <form action="/login" method="POST" id="Connexion" class="tabcontent">
                 <input type="text" id="user_log" name="username" placeholder="Username">
-                <input type="password" id="pass_log" name="password" placeholder="Password">
+                <input type="password" id="pass_log" name="password" placeholder="Password" required="true"    autocomplete="current-password">
                 <button class="log_button" type="submit"> Connexion </button>
                 <a href="" id="lostPassword">Mot de passe oubliée</a>
             </form>
             <form action="/inscription" method="POST" id="Inscription" class="tabcontent">
                 <input type="text" id="user_sub" placeholder="Username">
-                <input type="password" id="pass_sub" placeholder="Password">
-                <input type="password" id="check_sub" placeholder="Confirm password">
+                <input type="password" id="pass_sub" placeholder="Password" required="true" autocomplete="new-password">
+                <input type="password" id="check_sub" placeholder="Confirm password" required="true" autocomplete="current-password">
                 <button class="log_button" type="submit"> Inscription </button>
             </form>
-            <form action="/mdpOublie/" method="post" id="mdpOublie" class="tabcontent">
+            <form action="/mdpOublie" method="post" id="mdpOublie" class="tabcontent">
                 <input type="text" id="user_fg" placeholder="Username">
-                <button class="log_button" type="submit"> Envoyer </button>
+                <button class="log_button" type="submit"> Demande </button>
             </form>
         </div>
-        <form action="/login" method="POST" id="Connexion" class="tabcontent">
-            <input type="text" id="user_log" name="username" placeholder="Username">
-            <input type="password" id="pass_log" name="password" placeholder="Password">
-            <button class="log_button" type="submit"> Connexion </button>
-            <a href="" id="lostPassword">Mot de passe oubliée</a>
-        </form>
-        <form action="/inscription" method="POST" id="Inscription" class="tabcontent">
-            <input type="text" id="user_sub" placeholder="Username">
-            <input type="password" id="pass_sub" placeholder="Password">
-            <input type="password" id="check_sub" placeholder="Confirm password">
-            <button class="log_button" type="submit"> Inscription </button>
-        </form>
-        <form action="/mdpOublie" method="post" id="mdpOublie" class="tabcontent">
-            <input type="text" id="user_fg" placeholder="Username">
-            <button class="log_button" type="submit"> Demande </button>
-        </form>
     </div>
 </body>
 
