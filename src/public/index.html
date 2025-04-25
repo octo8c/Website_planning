@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
-    <head>
+
+<head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta charset="utf-8">
@@ -15,58 +16,71 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <script src="index.js"></script>
 </head>
-        <div id="InfoReunion">
-            <input type="input" placeholder="duree en minutes" id="duree_reunion">
-            <input type="time" id="heure_reunion">
-            <input type="date" id="date_reunion">
-            <input type="input" placeholder="Nom de la reunion" id="reunion_name">
-            <button id="create">Creation de la reunion</button>
-            <div id="quitter_creation">
-                <button id="bouton_quitter">Fermer</button>
-            </div>
-        </div>
-    <body>
-        <header class="row">
-            <div id="otherDiv" class="col-md-6"> 
-                <a href="index.html"> <img id="logo" src="mp_logo.png" > </a>
-            </div>
+<div id="InfoReunion">
+    <input type="time" id="heure_reunion">
+    <input type="time" id="heure_fin_reunion">
+    <input type="date" id="date_reunion">
+    <input type="input" placeholder="Nom de la reunion" id="reunion_name">
+    <button id="create">Creation de la reunion</button>
+    <div id="quitter_creation">
+        <button id="bouton_quitter">Fermer</button>
+    </div>
+</div>
 
-            <div id="creerReunionDiv" class="col-md-2">
-                <button id="Create_reunion"> CREER UNE REUNION </button>
-            </div>
-
-            <div id="connexionDiv" class="offset-md-1 col-md-2">
-                <a href="/log.html"> <button> CONNEXION </button> </a>
-            </div> 
-        </header>            
-        <div id="containerDiv" class="row no-gutters">
-            <div id="agendaDiv" class="col-md-9"> 
-                <div class="agenda-header">
-                    <button id="prevMonth">❮</button>
-                    <h2 id="monthYear">Avril 2025</h2>
-                    <button id="nextMonth">❯</button>
-                    <button id="today"> Aujourd'hui </button>
-                </div>
-
-                <ul class="jour-agenda row" id="nom-jour">
-                    <li>Lundi</li>
-                    <li>Mardi</li>
-                    <li>Mercredi</li>
-                    <li>Jeudi</li>
-                    <li>Vendredi</li>
-                    <li>Samedi</li>
-                    <li>Dimanche</li>
-                </ul>
-                <ul class="row" id="numero-jour"></ul> <!-- est rempli par le js-->
-            </div>
-            <div id="voirReunionDiv" class="col-md-3"></div> 
+<body>
+    <header class="row">
+        <div id="otherDiv" class="col-md-6">
+            <a href="index.html"> <img id="logo" src="mp_logo.png"> </a>
         </div>
 
+        <div id="creerReunionDiv" class="col-md-2">
+            <button id="Create_reunion"> CREER UNE REUNION </button>
+        </div>
 
-        <!-- Code pour boostrap, a laisser à la fin du body-->
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-            <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-        </body>
-    </body>
+        <div id="connexionDiv" class="offset-md-1 col-md-2">
+            <a href="/log.html"> <button> CONNEXION </button> </a>
+        </div>
+    </header>
+    <div id="containerDiv" class="row no-gutters">
+        <div id="agendaDiv" class="col-md-9">
+            <div class="agenda-header">
+                <button id="prevMonth">❮</button>
+                <h2 id="monthYear">Avril 2025</h2>
+                <button id="nextMonth">❯</button>
+                <button id="today"> Aujourd'hui </button>
+            </div>
+
+            <ul class="jour-agenda row" id="nom-jour">
+                <li>Lundi</li>
+                <li>Mardi</li>
+                <li>Mercredi</li>
+                <li>Jeudi</li>
+                <li>Vendredi</li>
+                <li>Samedi</li>
+                <li>Dimanche</li>
+            </ul>
+            <ul class="row" id="numero-jour"></ul> <!-- est rempli par le js-->
+        </div>
+        <div id="voirReunionDiv" class="col-md-3"></div>
+    </div>
+    <div id="popup-overlay" class="popup-overlay"></div>
+    <div id="modal" class="modal">
+        <div id="display-info"></div>
+        <div id="userType">
+            <input type="text" placeholder="username/email" id="mail/username">
+        </div>
+        <div id="modal-display-button">
+            <button id="modalButton">Fermer</button>
+            <button id="ajouterUtilisateur">Ajouter/Enlevez un utilisateur</button>
+            <button id="modal-quitter">Quitter la reunion</button>
+        </div>
+    </div>
+    <div id="modal-conf" class="modal">
+        <label>Voulez vous quittez l'evenement ? </label>
+        <div id="conf-display-button">
+            <button id="conf-cancel">Annuler</button>
+            <button id="conf-quittez">QUITTEZ</button>
+        </div>
+    </div>
+</body>
 </html>
-
