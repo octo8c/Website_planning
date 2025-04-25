@@ -25,7 +25,7 @@ const pool = new pg.Pool({
  * @param {*} mode Le mode de connexion 0 pour la connexion , 1 inscription , 2 mdp oublie
  * @returns Renvoie si la connexion c'est bien passe
  */
-async function operations(requete,username,motdepasse,mode) {
+async function operations(requete,username,motdepasse,mail,mode) {
     const client = await pool.connect();
     let res = await client.query (requete);
     let flag = false;
@@ -44,7 +44,7 @@ async function operations(requete,username,motdepasse,mode) {
         flag = true;
     }
     if(mode===1){//Tentaive d'inscription et aucun utilisateur qui a le meme pseudo 
-        client.query("Insert into utilisateur values ('"+username+"' , '"+motdepasse+"')");
+        client.query("Insert into utilisateur values ($1,$2,$3)",[username,mail,motdepasse]);
         let res = client.query("select * from utilisateur");
         client.release();
         return 1;//L'utilisateur est bien ajouté
@@ -147,10 +147,10 @@ app.get("/", (req, res) => {
 });
 
 app.post("/inscription",(req,res)=>{
-    operations("select * from utilisateur where username='"+req.body.username+"'",req.body.username,req.body.password,1)
+    operations("select * from utilisateur where username='"+req.body.username+"'",req.body.username,req.body.password,req.body.mail,1)
     .then(resultats =>{
     if(resultats==1){
-        res.send("Bien joue tu a reussi");
+        res.send(true);
     }else if(resultats == 0){
         let variable = "Erreur nom d'utilisateur deja trouve" ;
         res.send(variable);
@@ -161,7 +161,7 @@ app.post("/inscription",(req,res)=>{
 });
 
 app.post("/login",(req,res)=>{
-    operations("select * from utilisateur where username='"+req.body.username+"'",req.body.username,req.body.password,0)
+    operations("select * from utilisateur where username='"+req.body.username+"'",req.body.username,req.body.password,req.body.mail,0)
     .then(resultats =>{
     if(resultats==2){
         res.send("Bien joue tu a reussi");

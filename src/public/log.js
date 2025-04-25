@@ -49,7 +49,7 @@ $(document).ready(function(){
     $("#Inscription").on('submit',function(e){
         e.preventDefault();
         if(checkInput(to_check_sub)){
-            $.post("http://localhost:8080/inscription",{username : $("#user_sub").val().trim(),password : $("#pass_sub").val().trim()},function(res){
+            $.post("http://localhost:8080/inscription",{username : $("#user_sub").val().trim(),password : $("#pass_sub").val().trim(),mail : $("#mail_sub").val()},function(res){
                 //TODO faire quelque chose si la connection a marche
             });
         }
@@ -59,7 +59,7 @@ $(document).ready(function(){
         e.preventDefault();
         if(checkInput(to_check_oub)){
             $.post("http://localhost:8080/mdpOublie",{username : $("#user_fg").val().trim()},function(res){
-                //TODO faire quelque chose si la demande de mdp est passe
+                //TODO faire quelque chose si la demande de mdp est passe envoyez un mail
             });
         }
     });
