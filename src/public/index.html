@@ -20,6 +20,8 @@
     <input type="time" id="heure_reunion">
     <input type="time" id="heure_fin_reunion">
     <input type="date" id="date_reunion">
+    <input type="date" id="date_fin">
+    <input type="text" placeholder="Description" id="description_reunion">
     <input type="input" placeholder="Nom de la reunion" id="reunion_name">
     <button id="create">Creation de la reunion</button>
     <div id="quitter_creation">
@@ -44,6 +46,8 @@
     <div id="containerDiv" class="row no-gutters">
         <div id="agendaDiv" class="col-md-9">
             <div class="agenda-header">
+                <button id="selectFile">Importez vos reunion</button>
+                <input type="file" id="fileImport" accept=".ics">
                 <button id="prevMonth">❮</button>
                 <h2 id="monthYear">Avril 2025</h2>
                 <button id="nextMonth">❯</button>

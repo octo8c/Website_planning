@@ -40,6 +40,7 @@ $(document).ready(function(){
             participants = participants+".";
             $("#display-info").append("<p><b>Le créateur de la reunion : "+createur+"</b></p>");
             $("#display-info").append("<p> Les participants :"+participants+"</p>");
+            $("#display-info").append("<p>Description de la reunion : "+row.descr+"</p>")
         });
         $("#popup-overlay").css("display","inline");//On affiche les display
         $("#modal").css("display","inline");
@@ -88,6 +89,62 @@ $(document).ready(function(){
             }
         }
     });
+    function construct_date(date){
+        var date_separated = date.substring(0,7);
+        return date_separated.substring(0,3)+"-"+date_separated.substring(3,5)+"-"+date_separated.substring(5,7);
+    }
+    $("#selectFile").on('click',function(){
+        $("#fileImport").click();
+    });
+    $("#fileImport").on('change',function(event){
+        const file = $("#fileImport").val();
+        $.get(file)
+        .done(function(data){
+            var lines = data.split("\n");
+            var tab = [];
+            var attendees = []
+            lines.forEach(element => {
+                if(element.startWith("BEGIN:")){
+                    tab = [];
+                    attendees = [];                    
+                }else if (element.startWith("DTSTART:")){
+                    tab[0]=construct_date(element.split(":")[1]);
+                }else if(element.startWith("DTEND:")){
+                    tab[1]=construct_date(element.split(":")[1]);
+                }else if (element.startWith("SUMMARY:")){
+                    tab[2] = element.split(":")[1];
+                }else if (element.startWith("DESCRIPTION:")){
+                    tab[3] = element.split(":")[1];
+                }else if (element.startWith("LOCATION:")){
+                    tab[4] = element.split(":")[1]
+                }else if (element.startWith("ORGANIZER")){
+                    tab[5] =element.split("MAILTO:")[1];
+                }else if (element.startWith("ATTENDEE:")){
+                    attendees.push(element.split("MAILTO:")[1]);//On suppose qu'on 
+                }else if (element.startWith("END:")){
+                    $.post('http://localhost:8080/importReunion',{
+                        date_debut : tab[0] ,
+                        date_fin : tab[1] , 
+                        heure_debut : tab[2] ,
+                        heure_fin : tab[3] , 
+                        summary : tab[4] ,
+                        description : tab[5] , 
+                        organisateur : tab[6] ,
+                        invites : attendees
+                    },function(res){
+                        if(!res){
+
+                        }
+                    });
+                }else{
+                    /*On fait rien avec tout ca donc on s'en fous*/
+                }
+            });
+        })
+        .fail(function(){
+
+        });
+    });
 
     $("#Create_reunion").on('click',function(){
         $("div#InfoReunion").css("display","inline");
@@ -123,8 +180,10 @@ $(document).ready(function(){
                     nom_reunion : $("#reunion_name").val().trim(),
                     date_reunion : $("#date_reunion").val(),
                     username : "test" ,/*Jsp encore comment on vas recupere le nom de l'utilisateur qui c'est connecte encore*/
+                    descr : $("#description_reunion").val() ,
                     heure : $("#heure_reunion").val() , 
-                    heure_fin : $("#heure_fin_reunion").val() 
+                    heure_fin : $("#heure_fin_reunion").val() ,
+                    date_fin : $("#date_fin").val()
                 },function(res){
                 if(!res){//Message d'erreur 
                     errorMessage("#otherDiv","Erreur vous aurez une autre reunion en cours a ce moment la");

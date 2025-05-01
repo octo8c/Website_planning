@@ -78,6 +78,9 @@ button:hover {
 #userType{
     display: none;
 }
+#fileImport{
+    display: none;
+}
 
 
 /* ------------ règle de l'agenda ------------ */
