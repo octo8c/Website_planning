@@ -1,5 +1,5 @@
 /* ------------ règle générale ------------ */
-body {
+#mybody {
     background-color: #f4f6f7;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 20px;
