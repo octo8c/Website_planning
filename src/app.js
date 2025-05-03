@@ -1,5 +1,6 @@
 const express = require("express");
 const path = require("path");
+const nodemailer = require('nodemailer');
 const app = express();
 const port = 8080;
 require('dotenv').config();
@@ -44,7 +45,7 @@ async function operations(requete,username,motdepasse,mail,mode) {
         flag = true;
     }
     if(mode===1){//Tentaive d'inscription et aucun utilisateur qui a le meme pseudo 
-        client.query("Insert into utilisateur values ($1,$2,$3)",[username,mail,motdepasse]);
+        await client.query("Insert into utilisateur values ($1,$2,$3)",[username,mail,motdepasse]);
         let res = client.query("select * from utilisateur");
         client.release();
         return 1;//L'utilisateur est bien ajouté
@@ -62,9 +63,9 @@ async function operations(requete,username,motdepasse,mail,mode) {
  */
 async function addReunion(req){
     const reunion_nom = req.body.nom_reunion;
-    const username = req.body.username;
-    const date_reunion = req.body.date_reunion;
-    const heure = req.body.heure;
+    const username = req.body.organisateur;
+    const date_reunion = req.body.date_debut;
+    const heure = req.body.heure_debut;
     const heure_fin_reunion = req.body.heure_fin;
     const date_fin = req.body.date_fin;
     const descr = req.body.descr;
@@ -72,12 +73,12 @@ async function addReunion(req){
     let new_date = date_reunion.replaceAll("/","-");
     let new_date_fin = date_fin.replaceAll("/","-");
     let tab = [reunion_nom,descr,username,new_date,new_date_fin,heure+":00",heure_fin_reunion+":00"];
-    let requete = "select id_reunion from reunion where heure=$1 and nom_reunion=$2 and creator_username=$3 and date_reunion=$4";
     await client.query("insert into reunion (nom_reunion,descr, creator_username, date_reunion,date_fin,heure,heure_fin) values ($1,$2,$3,$4,$5,$6,$7)",tab);
-    let id = await client.query(requete,[heure,reunion_nom,username,date_reunion]);
-    await client.query("insert into participe values ($1,$2,$3)",[id.rows[0].id_reunion,username,2]);
+    let requete = "select id_reunion from reunion where heure=$1 and nom_reunion=$2 and creator_username=$3 and date_reunion=$4";
+    let res = await client.query(requete,[heure,reunion_nom,username,date_reunion]);
+    await client.query("insert into participe values ($1,$2,$3)",[res.rows[0].id_reunion,username,2]);
     client.release();
-    return id;
+    return res.rows[0].id_reunion;
 }
 
 async function getReunion(username){
@@ -88,7 +89,14 @@ async function getReunion(username){
     client.release();
     return res;
 }
-
+/**
+ * Verifie si la reunion peut bien etre ajouté
+ * @param {*} username 
+ * @param {*} date 
+ * @param {*} heure 
+ * @param {*} heure_fin 
+ * @returns 
+ */
 async function checkReunion(username,date,heure,heure_fin){
     const client = await pool.connect();
     let res = await client.query("select reunion.heure_fin , reunion.heure from reunion join participe on participe.id_reunion = reunion.id_reunion where participe.username=$1 and reunion.date_reunion=$2",[username,date]);
@@ -137,10 +145,13 @@ async function invitReunion(username) {
         let res = await client.query("select adresse_mail from utilisateur where username=$1",username);
         if(res.rows!==undefined){
             mail = res.rows[0].adresse_mail;
+        }else{
+            return -1;
         }
     }else{
         mail = username;
     }
+
     //TODO FAIRE L'ENVOIE DE MAIL
     return flag;
 }
@@ -148,20 +159,34 @@ async function invitReunion(username) {
  * Ajoute tout les utilisateur de la reunion
  * @param {*} req 
  */
-async function importReunion(req,id_reunion){
-    let id = addReunion(req);
+async function importReunion(req){
+    let id =0 ;
+    if(!checkReunion(req.body.organisateur,req.body.date_debut,req.body.heure_debut,req.body.heure_fin)){
+        console.log("PAS PASSE CHECK REUNION");
+        return 2;
+    }
+    console.log(req.body.invites);
+    await addReunion(req).then(result=>id=result).catch(err=>{console.log("Reunion déja ajouté erreur : "+err.stack);id=-1;});
+    if(id===-1) return 1;
     const client = await pool.connect();
     for(let participant_addr of req.body.invites){
+        console.log(participant_addr);
         let res = await client.query("select username from utilisateur where adresse_mail=$1",[participant_addr]);
         let pseudo = "";
-        if(res.username!==undefined){
-            pseudo = res.username;
+        if(res.rows[0]!==undefined){
+            pseudo = res.rows[0].username;
+            //Normalement c'est pas possible sinon la reunion aurait déja été ajouté
+            
         }else{
-            let pseudo = participant_addr.split("@")[0];
+            console.log("ENVOIE D'UNE REQUETE");
+            pseudo = participant_addr.split("@")[0];
+            console.log("Le nouveau pseudo :"+pseudo);
             await client.query("insert into utilisateur(username,adresse_mail) values ($1,$2)",[pseudo,participant_addr]);
         }
+        console.log("Le pseudo : "+pseudo+" id : "+id);
         await client.query("insert into participe values ($1,$2,0)",[id,pseudo]);
     }
+    return 0;
 }
 
 app.get("/", (req, res) => {
@@ -240,6 +265,7 @@ app.post('/invit',(req,res)=>{
 });
 
 app.post('/importReunion',(req,res)=>{
+    console.log("IMPORT REUNION");
     importReunion(req)
     .then(result=>res.send(true))
     .catch(error=>{console.log(error.stack);res.send(false);});

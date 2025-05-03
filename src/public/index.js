@@ -81,7 +81,7 @@ $(document).ready(function(){
                     if(result){
                         //TODO MANQUE TRAITEMENT DES MAILS
                     }else{
-
+                        errorMessage("#InfoReunion","Erreur ajout user");
                     }
                 });
             }else{
@@ -90,60 +90,93 @@ $(document).ready(function(){
         }
     });
     function construct_date(date){
-        var date_separated = date.substring(0,7);
-        return date_separated.substring(0,3)+"-"+date_separated.substring(3,5)+"-"+date_separated.substring(5,7);
+        var date_separated = date.substring(0,8);
+        return date_separated.substring(0,4)+"-"+date_separated.substring(4,6)+"-"+date_separated.substring(6,8);
+    }
+    /**
+     * Prends un temps d'un calendrier ics et le transforme en temps pour la base de données
+     * @param {*} time Au format [1-9]*T
+     * Renvoie le temps au bon format pour la base de données
+     */
+    function construct_time(time){
+        let tmp = time.substring(0,time.length-1);
+        return tmp.substring(0,2)+":"+tmp.substring(2,4);
     }
     $("#selectFile").on('click',function(){
         $("#fileImport").click();
     });
     $("#fileImport").on('change',function(event){
-        const file = $("#fileImport").val();
-        $.get(file)
-        .done(function(data){
-            var lines = data.split("\n");
+        const file = this.files[0];
+        if(!this.files ||!this.files[0]){
+            return;
+        }
+        console.log($("#fileImport").val());
+        const fileReader = new FileReader();
+        console.log("COucou j'aimerais affichez des trucs j'espere");
+        fileReader.onload = function(e){
+            var lines = e.target.result.split("\n");
             var tab = [];
-            var attendees = []
+            let attendees = [];
+            let ind = 0;
             lines.forEach(element => {
-                if(element.startWith("BEGIN:")){
+                console.log(element);
+                if(element.substring(0,6)==="BEGIN:"){
                     tab = [];
-                    attendees = [];                    
-                }else if (element.startWith("DTSTART:")){
+                    attendees = [];
+                    ind = 0;
+                    console.log("BEGIN");                    
+                }else if (element.substring(0,8)==="DTSTART:"){
                     tab[0]=construct_date(element.split(":")[1]);
-                }else if(element.startWith("DTEND:")){
+                    tab[2]=construct_time(element.split("T")[4]);
+                    console.log("DTSTART");
+                }else if(element.substring(0,6)==="DTEND:"){
                     tab[1]=construct_date(element.split(":")[1]);
-                }else if (element.startWith("SUMMARY:")){
-                    tab[2] = element.split(":")[1];
-                }else if (element.startWith("DESCRIPTION:")){
-                    tab[3] = element.split(":")[1];
-                }else if (element.startWith("LOCATION:")){
-                    tab[4] = element.split(":")[1]
-                }else if (element.startWith("ORGANIZER")){
-                    tab[5] =element.split("MAILTO:")[1];
-                }else if (element.startWith("ATTENDEE:")){
-                    attendees.push(element.split("MAILTO:")[1]);//On suppose qu'on 
-                }else if (element.startWith("END:")){
-                    $.post('http://localhost:8080/importReunion',{
-                        date_debut : tab[0] ,
-                        date_fin : tab[1] , 
-                        heure_debut : tab[2] ,
-                        heure_fin : tab[3] , 
-                        summary : tab[4] ,
-                        description : tab[5] , 
-                        organisateur : tab[6] ,
-                        invites : attendees
-                    },function(res){
-                        if(!res){
-
-                        }
-                    });
+                    tab[3]=construct_time(element.split("T")[2]);
+                    console.log("DTEND:");
+                }else if (element.substring(0,8)==="SUMMARY:"){
+                    tab[4] = element.split("SUMMARY:")[1];
+                    console.log("SUMMARY:");
+                }else if (element.substring(0,12)==="DESCRIPTION:"){
+                    tab[5] = element.split("DESCRIPTION:")[1];
+                    console.log("DESCRIPTION:");
+                }else if (element.substring(0,9)==="LOCATION:"){
+                    tab[7] = element.split(":")[1];
+                    console.log("LOCATION");
+                }else if (element.substring(0,9)==="ORGANIZER"){
+                    tab[6]=element.split("CN=")[1].split(":")[0];//On suppose qu'on 
+                    console.log("ORGANIZER");
+                }else if (element.substring(0,9)==="ATTENDEE;"){
+                    attendees[ind] =element.split("MAILTO:")[1];
+                    ind++;
+                    console.log("ATTENDEE");
+                }else if (element.substring(0,4)==="END:"){
+                    console.log("END:");
+                    console.log(attendees);
+                    if(element.substring(4)==="VEVENT"){
+                        console.log(""+tab);
+                        $.post('http://localhost:8080/importReunion',{
+                            date_debut : tab[0] ,
+                            date_fin : tab[1] , 
+                            heure_debut : tab[2] ,
+                            heure_fin : tab[3] , 
+                            nom_reunion : tab[4] ,
+                            descr : tab[5] , 
+                            organisateur : tab[6] ,
+                            invites : attendees
+                        },function(res){
+                            if(!res){
+                                errorMessage("#InfoReunion","Erreur fichier au mauvais format");
+                            }else{
+                                updateDisplayReunion("test");
+                            }
+                        });
+                    }
                 }else{
                     /*On fait rien avec tout ca donc on s'en fous*/
                 }
-            });
-        })
-        .fail(function(){
-
         });
+        }
+        fileReader.readAsText(this.files[0],'UTF-8');
     });
 
     $("#Create_reunion").on('click',function(){
@@ -166,7 +199,6 @@ $(document).ready(function(){
             });
         },3000);
     }
-
     $("button#create").on('click',function(){
         if($("input#reunion_name").val().trim()===""){
             $("input#reunion_name").css("border","1px solid red");
@@ -178,10 +210,10 @@ $(document).ready(function(){
             $.post("http://localhost:8080/creation",
                 {
                     nom_reunion : $("#reunion_name").val().trim(),
-                    date_reunion : $("#date_reunion").val(),
-                    username : "test" ,/*Jsp encore comment on vas recupere le nom de l'utilisateur qui c'est connecte encore*/
+                    date_debut : $("#date_reunion").val(),
+                    organisateur : "test" ,/*Jsp encore comment on vas recupere le nom de l'utilisateur qui c'est connecte encore*/
                     descr : $("#description_reunion").val() ,
-                    heure : $("#heure_reunion").val() , 
+                    heure_debut : $("#heure_reunion").val() , 
                     heure_fin : $("#heure_fin_reunion").val() ,
                     date_fin : $("#date_fin").val()
                 },function(res){
@@ -243,7 +275,6 @@ function month_to_string(x){
         case 11 : return "Décembre";
     }
 }
-
 function construct_days(date){  // first day of the week must have to be the number of the monday from the first week of the month
     $("#numero-jour").html("");
 

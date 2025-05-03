@@ -28,6 +28,6 @@ create table participe (
     foreign key (id_reunion) references reunion(id_reunion) on update cascade on delete cascade
 );
 
-insert into utilisateur values ('titouan','pw1');
-insert into utilisateur values ('edourad','jsp');
-insert into utilisateur values  ('test','1234');
+insert into utilisateur values ('titouan','Titouan23@gmail.com','pw1');
+insert into utilisateur values ('edourad','edouard@tail.fr','jsp');
+insert into utilisateur values  ('test','test@mail.com','1234');
