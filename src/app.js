@@ -10,6 +10,15 @@ app.use(express.static('public'));
 app.use(express.static('image'));   
 
 const pg = require('pg');
+   let transporter = nodemailer.createTransport({
+        host : 'smtp.gmail.com', 
+        port : 465 ,
+        secure : true , 
+        auth:{
+            user : process.env.MAIL ,
+            pass : process.env.PASS
+        }
+    });
 
 const pool = new pg.Pool({
     user : process.env.USER , 
@@ -137,11 +146,11 @@ async function getInfoReunion(id_reunion){
     return res;
 }
 
-async function invitReunion(username) {
+async function invitReunion(username,inviter,id,nom_reunion) {
     const client = await pool.connect();
     let mail = "";
     let flag = false;
-    if(!username.contains("@")){
+    if(!username.includes("@")){
         let res = await client.query("select adresse_mail from utilisateur where username=$1",username);
         if(res.rows!==undefined){
             mail = res.rows[0].adresse_mail;
@@ -152,8 +161,19 @@ async function invitReunion(username) {
         mail = username;
     }
 
-    //TODO FAIRE L'ENVOIE DE MAIL
-    return flag;
+    return flag && (await mail("webprojetprogramation@gmail.com",mail,
+        "Invitation pour une reunion",
+        "Bonjours vous etes invitez , voulez vous joindre a la reunion "
+        +nom_reunion+" ? http://localhost/8080/invit/"+id+"/"+username))!==undefined;
+}
+
+async function mail(from,to,subject,text){
+    return info = transporter.sendMail({
+        from : "webprojetprogramation@gmail.com" , 
+        to : mail ,
+        subject : "Invitation pour une reunion" , 
+        text : "Bonjours vous etes invitez , voulez vous joindre a la reunion "+nom_reunion+" ? http://localhost/8080/invit/"+id+"/"+username ,
+    });
 }
 /**
  * Ajoute tout les utilisateur de la reunion
@@ -223,8 +243,10 @@ app.post("/login",(req,res)=>{
 app.post("/mdpOublie",(req,res)=>{
     operations("select * from utilisateur where username='"+req.body.username+"'",req.body.username,req.body.username,2)
     .then(resultats =>{if(resultats==1){
+        mail(process.env.MAIL,resultats.rows[0].mail,"Reinitialisation Mot de passe",
+            "Cliquez sur ce lien pour reinitialisez votre mot de passe : http://localhost:8080/mdp/"+req.body.username);
         //TODO ENVOYEZ UN MAIL POUR REINIALISEZ LE MDP (en gros un mail avec un lien localhost:8080/username/newMDP)
-        res.send("Bien joue tu a reussi");
+        res.send(true);
     }else if(resultats == 1){
         res.status(403);
         let variable = resultats ==1 ? "Erreur mot de passe incorect":"Erreur utilisateur introuvable" ;
@@ -234,7 +256,7 @@ app.post("/mdpOublie",(req,res)=>{
 });
 
 app.post('/creation',async (req,res)=>{
-    checkReunion(req.body.username,req.body.date_reunion,req.body.heure,req.body.heure_fin)
+    checkReunion(req.body.username,req.body.date_reunion,req.body.heure_debut,req.body.heure_fin)
     .then(result=>{
         if(result){
             addReunion(req)
@@ -261,7 +283,7 @@ app.post('/quittez-reunion',(req,res)=>{
 });
 
 app.post('/invit',(req,res)=>{
-    invitReunion(req.body.username);
+    invitReunion(req.body.username,req.body.inviter,req.body.id,req.body.nom_reunion).then(result=>res.send(result)).catch(err=>{console.log("Erreur mail :"+err);res.send(false);})
 });
 
 app.post('/importReunion',(req,res)=>{
@@ -269,6 +291,14 @@ app.post('/importReunion',(req,res)=>{
     importReunion(req)
     .then(result=>res.send(true))
     .catch(error=>{console.log(error.stack);res.send(false);});
+});
+
+app.get('/invit/:index/:username',(req,res)=>{
+    console.log("Bon pour l'instant c'est pas finis par contre...");
+});
+
+app.get('mdp/:username',(req,res)=>{
+    console.log("Bonjour "+req.params.username+"Le site est pas encore finis...");
 });
 
 app.listen(port);

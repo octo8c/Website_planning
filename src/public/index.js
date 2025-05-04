@@ -22,13 +22,14 @@ $(document).ready(function(){
             }
         });
     }
+    let flag = false;
 
     function viewReunion(username,row){
         let createur = "";
         $.post('http://localhost:8080/getInfo',{id_reunion:row.id_reunion},function(resultats){
             let participants = "";
             $("#display-info").append("<h3><b>"+row.nom_reunion+"</b></h3>");
-            $("#display-info").append("<p>"+row.date_reunion +"</p><br>");
+            $("#display-info").append("<p> Du "+row.date_reunion +"Au "+row.date_fin+"</p><br>");
             $("#display-info").append("<p>Reunion de "+row.heure+" : "+row.heure_fin+" </p>");
             for (let participant of resultats.rows){
                 participants = participants + ", " + participant.username;
@@ -49,6 +50,7 @@ $(document).ready(function(){
             $("#display-info").empty();
             $("#popup-overlay").css("display","none");
             $("#modal").css("display","none");
+            flag = false;
         });
 
         $("#conf-quittez").on('click',function(){
@@ -58,6 +60,25 @@ $(document).ready(function(){
                     $("#popup-overlay").css("display","none");
             });
             updateDisplayReunion(username);
+        });
+        $("#ajouterUtilisateur").on('click',function(){
+            if(!flag){
+                $("#userType").css("display","inline");
+                flag = true;
+            }else{
+                if($("#mail_username").val()!==""){
+                    console.log("Coucou je suis la "+$("#mail_username").val());
+                    $.post('http://localhost:8080/invit',{username : $("#mail_username").val(),inviter : createur,id:row.id_reunion,nom_reunion:row.nom_reunion},
+                    function(result){
+                        if(!result){
+                            errorMessage("#InfoReunion","Erreur ajout user");
+                        }
+                    });
+                    $("#modalButton").click();
+                }else{
+                    errorMessage("#modal","Vous devez tapez le nom de l'utilisateur");
+                }
+            }
         });
     }
 
@@ -71,24 +92,6 @@ $(document).ready(function(){
         $("#modal").css("display","inline");
     });
 
-    let flag = false;
-    $("#ajouterUtilisateur").on('click',function(){
-        if(!flag){
-            $("#userType").css("display","inline");
-        }else{
-            if($("#mail/username").val()!==""){
-                $.post('http://localhost:8080/invit',{username : $("#mail/username").val()},function(result){
-                    if(result){
-                        //TODO MANQUE TRAITEMENT DES MAILS
-                    }else{
-                        errorMessage("#InfoReunion","Erreur ajout user");
-                    }
-                });
-            }else{
-
-            }
-        }
-    });
     function construct_date(date){
         var date_separated = date.substring(0,8);
         return date_separated.substring(0,4)+"-"+date_separated.substring(4,6)+"-"+date_separated.substring(6,8);
