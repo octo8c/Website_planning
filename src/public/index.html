@@ -7,19 +7,24 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/index.css" rel="stylesheet">
-    <link href="/calendar.css" rel="stylesheet">
+    <link rel="stylesheet" href="/index.css">
+    <link rel="stylesheet" href="log.css">
+    <link rel="stylesheet" href="/calendar.css">
     <title> First Agenda </title>
     <link rel="icon" href="mp_icon.png" type="image/png">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <script src="index.js"></script>
+    <script src="log.js"></script>
 </head>
+
 <div id="InfoReunion">
     <input type="time" id="heure_reunion">
     <input type="time" id="heure_fin_reunion">
     <input type="date" id="date_reunion">
+    <input type="date" id="date_fin">
+    <input type="text" placeholder="Description" id="description_reunion">
     <input type="input" placeholder="Nom de la reunion" id="reunion_name">
     <button id="create">Creation de la reunion</button>
     <div id="quitter_creation">
@@ -27,7 +32,8 @@
     </div>
 </div>
 
-<body>
+<body id="mybody">
+    <!-- HEADER -->
     <header class="row">
         <div id="otherDiv" class="col-md-6">
             <a href="index.html"> <img id="logo" src="mp_logo.png"> </a>
@@ -38,12 +44,52 @@
         </div>
 
         <div id="connexionDiv" class="offset-md-1 col-md-2">
-            <a href="/log.html"> <button> CONNEXION </button> </a>
+            <button id="loginButton"> CONNEXION </button>
         </div>
     </header>
+
+    <!-- POPUP CONNEXION -->
+    <div id="popupLogin">
+        <img id="closeLoginButton" src="closebutton.png" height="50px" width="50px" style="cursor:pointer">
+
+        <div id="not-header">
+            <div id="generalContainer">
+                <div id="containerhead">
+                    <h1 id="id_title"> IDENTIFICATION </h1>
+                </div>
+    
+                <div id="tabs">
+                    <button class="tablinks" id="inscr">Inscription</button>
+                    <button class="tablinks" id="conex">Connexion</button>
+                </div>
+    
+                <form action="/login" method="POST" id="Connexion" class="tabcontent">
+                    <input class="log_input" type="text" id="user_log" name="username" placeholder="Username">
+                    <input class="log_input" type="password" id="pass_log" name="password" placeholder="Password" required="true" autocomplete="current-password">
+                    <button class="log_button" type="submit"> Connexion </button>
+                    <a href="" id="lostPassword">Mot de passe oubliée</a>
+                </form>
+                <form action="/inscription" method="POST" id="Inscription" class="tabcontent">
+                    <input class="log_input" type="text" id="user_sub" placeholder="Username">
+                    <input class="log_input" type="text" id="mail_sub" placeholder="Email">
+                    <input class="log_input" type="password" id="pass_sub" placeholder="Password" required="true" autocomplete="new-password">
+                    <input class="log_input" type="password" id="check_sub" placeholder="Confirm password" required="true" autocomplete="current-password">
+                    <button class="log_button" type="submit"> Inscription </button>
+                </form>
+                <form action="/mdpOublie" method="post" id="mdpOublie" class="tabcontent">
+                    <input class="log_input" type="text" id="user_fg" placeholder="Username">
+                    <button class="log_button" type="submit"> Demande </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- AGENDA -->
     <div id="containerDiv" class="row no-gutters">
         <div id="agendaDiv" class="col-md-9">
             <div class="agenda-header">
+                <button id="selectFile">Importez vos reunion</button>
+                <input type="file" id="fileImport" accept=".ics">
                 <button id="prevMonth">❮</button>
                 <h2 id="monthYear">Avril 2025</h2>
                 <button id="nextMonth">❯</button>
@@ -67,7 +113,7 @@
     <div id="modal" class="modal">
         <div id="display-info"></div>
         <div id="userType">
-            <input type="text" placeholder="username/email" id="mail/username">
+            <input type="text" placeholder="username/email" id="mail_username">
         </div>
         <div id="modal-display-button">
             <button id="modalButton">Fermer</button>

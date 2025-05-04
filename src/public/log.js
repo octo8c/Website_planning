@@ -24,13 +24,13 @@ $(document).ready(function(){
         if (value != undefined) $("#"+value).show();
     }
     function update_view_button(el){
-        if (el.hasClass("selected")){
+        if (el.hasClass("log_selected")){
             switchTabs(undefined);
-            $("button").removeClass("selected");
+            $("button").removeClass("log_selected");
             return;
         }
-        $("button").removeClass("selected");  
-        el.addClass("selected");
+        $("button").removeClass("log_selected");  
+        el.addClass("log_selected");
     }
 
 
