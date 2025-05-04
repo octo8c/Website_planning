@@ -80,4 +80,14 @@ $(document).ready(function(){
         switchTabs('mdpOublie');
      });
     $("div#Connexion").css('display','block');
+    
+    $("#loginButton").on('click', function (){
+        $("#popupLogin").css("visibility", "visible");
+    });
+
+    $("#closeLoginButton").on('click', function (){
+        $("#popupLogin").css('visibility', 'hidden');
+        $(".tabcontent").css('visibility', 'hidden');
+        $(".tabcontent").css('visibility', 'inherit');
+    });
 });

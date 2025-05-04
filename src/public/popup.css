@@ -1,0 +1,96 @@
+/* ------------ règle pour le popup du login --------- */
+#popupLogin{
+    visibility: hidden;
+    position:absolute;
+    top: 0px;
+    left: 0px;
+    width:100%;
+    height: 100%;
+    z-index: 2;
+    backdrop-filter: blur(10px);
+}
+
+#closeLoginButton{
+    position: absolute;
+    top: 10px;
+    left: 10px;
+}
+
+
+/* ------------ règle pour le popup de la création de réunion --------- */
+
+#closeReuButton{
+    position:absolute;
+    top: 10px;
+    left: 10px;
+}
+.InfoReunion{
+    visibility: hidden;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap:10px
+}
+
+.selectionTime{
+    width: fit-content;
+    margin: 0px;
+    padding: 0px !important;
+}
+
+.date_heure{
+    display: flex;
+    gap:3px;
+}
+
+.InfoReunion select {
+    width: 50px;
+    border: none;
+    text-align: center;
+    margin: 0px 2px;
+
+    /* for firefox */
+    -moz-appearance: none;
+
+    /* for Chrome */
+    -webkit-appearance: none;
+}
+
+.InfoReunion div div{
+    width: fit-content;
+    align-content: center;
+    display: flex;}
+
+.InfoReunion p {
+    height: 100%;
+    margin: 0px;
+    width: max-content;
+}
+
+.date_reunion {
+    margin-right: 20px;
+}
+
+.separateur {
+    width: 30px;
+    text-align: center;
+    border: none;
+    background: none;
+}
+
+.number_creneau {
+    margin-right: 10px;
+}
+
+.selectionTime *{
+    margin: 0px !important;
+    background-color: #e9e9ed;
+}
