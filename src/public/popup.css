@@ -67,12 +67,7 @@
 .InfoReunion div div{
     width: fit-content;
     align-content: center;
-    display: flex;}
-
-.InfoReunion p {
-    height: 100%;
-    margin: 0px;
-    width: max-content;
+    display: flex;
 }
 
 .date_reunion {
@@ -87,7 +82,10 @@
 }
 
 .number_creneau {
+    margin: 0px;
     margin-right: 10px;
+    height: 100%;
+    width: max-content;
 }
 
 .selectionTime *{

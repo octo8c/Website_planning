@@ -53,26 +53,31 @@ $(document).ready(function(){
 
 
         value_of_first_day = first_day_of_the_first_week(date.getFullYear(), date.getMonth());
-        console.log(value_of_first_day);
-        console.log(last_day_in_month(date.getFullYear(), date.getMonth()-1));
-        if (value_of_first_day != 1){
+        let temp_d = new Date(date);
+        temp_d.setDate(value_of_first_day - last_day_in_month(date.getFullYear(), date.getMonth()-1));
+
+        if (value_of_first_day != 1){   
             for (let i=value_of_first_day; i<=last_day_in_month(date.getFullYear(), date.getMonth()-1); i++){ // start of the week from potentially the previous month
-                $("#numero-jour").append("<li class='disabled agenda-case'>"+ i +"</li>");
+                $("#numero-jour").append("<li class='disabled agenda-case' real_date='"+ temp_d.getTime() +"'>"+ i +"</li>");
+                temp_d.setDate(temp_d.getDate()+1);
             }
         }
         
-        
+        temp_d = new Date(date);
         for (let i=1; i<=last_day_in_month(date.getFullYear(), date.getMonth()); i++){
-            $("#numero-jour").append("<li class='agenda-case'>"+i+"</li>");
+            temp_d.setDate(i);
+            $("#numero-jour").append("<li class='agenda-case' real_date='"+ temp_d.getTime() +"'>"+i+"</li>");
         }
 
         let indice_jour=1;
         let totalDays = $("#numero-jour li").length;
+        temp_d.setDate(temp_d.getDate()+1);
         while (totalDays % 7 !== 0) {
-            $("#numero-jour").append('<li class="disabled agenda-case">'+indice_jour+'</li>');
+            $("#numero-jour").append('<li class="disabled agenda-case" real_date="'+ temp_d.getTime() +'">'+indice_jour+'</li>');
+            temp_d.setDate(temp_d.getDate()+1);
             indice_jour++;
             totalDays++;
-        }    
+        }
 
         
     }
@@ -102,5 +107,29 @@ $(document).ready(function(){
                 return ($(this).html() == real_date.getDate());
             }).addClass("today");
         }
+
+        // affichage quand on doubleclick sur un jour
+        $(".agenda-case").on("dblclick", function () {
+            let t_date = new Date(new Number($(this).attr("real_date")));
+            //alert("a faire");   
+
+            $("#Create_reunion").trigger("click"); // on trigger l'evenement création réunion
+            $("#original_creneau .date_reunion").val(t_date.getFullYear()+"-"+add_zero(t_date.getMonth()+1)+"-"+add_zero(t_date.getDate()))
+        });
     }
+
+
 });
+
+/**
+ * 
+ * @param {*} date determine if we have to add a zero to correctly print the value
+ * @returns the value with or without a zero
+ */
+function add_zero(date){
+    if (date<10){
+        return "0"+date;
+    } else {
+        return date;
+    }
+}

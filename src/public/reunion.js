@@ -21,6 +21,11 @@ $(document).ready(function () {
 
 
     $("#closeReuButton").on("click", function(){
+        // reset des values
+        $(".date_heure").not("#original_creneau").prop("outerHTML", "")
+        nbr_creneau = 1;
+        $(".InfoReunion input[type='date']").val("");
+        synchro_date(date);
         $(".InfoReunion").css("visibility", "hidden");
     }); 
 
@@ -53,7 +58,7 @@ $(document).ready(function () {
 
         if($("input#reunion_name").val().trim()===""){
             $("input#reunion_name").css("border","1px solid red");
-            errorMessage("#InfoReunion","Erreur veuillez donnez un nom a la reunion");
+            errorMessage(".InfoReunion","Erreur veuillez donnez un nom a la reunion");
         }else if(verif_validité_heure(heure_reunion)){
 
             $.post("http://localhost:8080/creation",
@@ -66,13 +71,15 @@ $(document).ready(function () {
                     heure_fin : $("#heure_fin_reunion").val()
                 },function(res){
                 if(!res){//Message d'erreur 
-                    errorMessage("#otherDiv","Erreur vous aurez une autre reunion en cours a ce moment la");
+                    errorMessage(".InfoReunion","Erreur vous aurez une autre reunion en cours a ce moment la");
                 }
                 updateDisplayReunion('test');//TODO METTRE LE NOM DE L'UTILISATEUR A LA PLACE
             });
         }else{
-            errorMessage("#InfoReunion","Mettez une heure de debut inférieur a l'heure de fin");
+            errorMessage(".InfoReunion","Mettez une heure de debut inférieur a l'heure de fin");
         }
+
+        
     });
 
     /**
@@ -101,8 +108,12 @@ $(document).ready(function () {
     });
 
     function synchro_date(date_actuelle){
-        $(".InfoReunion input[type='date']").val(date_actuelle.getFullYear()+"-"+add_zero(date_actuelle.getMonth())+"-"+add_zero(date_actuelle.getDate()));
+        $(".InfoReunion input[type='date']").each(function (){
+            if ($(this).val() == "") $(this).val(date_actuelle.getFullYear()+"-"+add_zero(date_actuelle.getMonth())+"-"+add_zero(date_actuelle.getDate()));
+            else console.log($(this).val());
+        });
         $(".selectionTime select.heure-reu").val(add_zero(date_actuelle.getHours()));
         $(".selectionTime select.minute-reu").val(add_zero(date_actuelle.getMinutes() + (5 - (date_actuelle.getMinutes() % 5)))); 
     }
+
 });
