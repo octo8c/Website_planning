@@ -148,6 +148,8 @@
     <div id="containerDiv" class="row no-gutters">
         <div id="agendaDiv" class="col-md-9">
             <div class="agenda-header">
+                <button id="selectFile">Importez vos reunion</button>
+                <input type="file" id="fileImport" accept=".ics">
                 <button id="prevMonth">❮</button>
                 <h2 id="monthYear">Avril 2025</h2>
                 <button id="nextMonth">❯</button>
@@ -171,7 +173,7 @@
     <div id="modal" class="modal">
         <div id="display-info"></div>
         <div id="userType">
-            <input type="text" placeholder="username/email" id="mail/username">
+            <input type="text" placeholder="username/email" id="mail_username">
         </div>
         <div id="modal-display-button">
             <button id="modalButton">Fermer</button>
