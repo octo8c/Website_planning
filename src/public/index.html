@@ -8,8 +8,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/index.css">
-    <link rel="stylesheet" href="log.css">
+    <link rel="stylesheet" href="/log.css">
     <link rel="stylesheet" href="/calendar.css">
+    <link rel="stylesheet" href="/popup.css">
     <title> First Agenda </title>
     <link rel="icon" href="mp_icon.png" type="image/png">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -17,19 +18,56 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <script src="index.js"></script>
     <script src="log.js"></script>
+    <script src="calendar.js"></script>
+    <script src="reunion.js"></script>
 </head>
 
-<div id="InfoReunion">
-    <input type="time" id="heure_reunion">
-    <input type="time" id="heure_fin_reunion">
-    <input type="date" id="date_reunion">
-    <input type="date" id="date_fin">
-    <input type="text" placeholder="Description" id="description_reunion">
-    <input type="input" placeholder="Nom de la reunion" id="reunion_name">
-    <button id="create">Creation de la reunion</button>
-    <div id="quitter_creation">
-        <button id="bouton_quitter">Fermer</button>
-    </div>
+
+<!-- DOIT RESTER HIDDEN, EST AJOUTé PAR UN SCRIPT JS-->
+<div id="selection-heure-reu" class="selection_temps">
+    <!-- Pour les selection d'heure -->
+    <select class="heure-reu" hidden>
+        <option value="00"> 00 </option>
+        <option value="01"> 01 </option>
+        <option value="02"> 02 </option>
+        <option value="03"> 03 </option>
+        <option value="04"> 04 </option>
+        <option value="05"> 05 </option>
+        <option value="06"> 06 </option>
+        <option value="07"> 07 </option>
+        <option value="08"> 08 </option>
+        <option value="09"> 09 </option>
+        <option value="10"> 10 </option>
+        <option value="11"> 11 </option>
+        <option value="12"> 12 </option>
+        <option value="13"> 13 </option>
+        <option value="14"> 14 </option>
+        <option value="15"> 15 </option>
+        <option value="16"> 16 </option>
+        <option value="17"> 17 </option>
+        <option value="18"> 18 </option>
+        <option value="19"> 19 </option>
+        <option value="20"> 20 </option>
+        <option value="21"> 21 </option>
+        <option value="22"> 22 </option>
+        <option value="23"> 23 </option>
+    </select>
+    <input disabled class="separateur" value=":" style="width: 10px;" hidden>
+    <select class="minute-reu" hidden>
+        <option value="00"> 00 </option>
+        <option value="05"> 05 </option>
+        <option value="10"> 10 </option>
+        <option value="15"> 15 </option>
+        <option value="20"> 20 </option>
+        <option value="25"> 25 </option>
+        <option value="30"> 30 </option>
+        <option value="35"> 35 </option>
+        <option value="40"> 40 </option>
+        <option value="45"> 45 </option>
+        <option value="50"> 50 </option>
+        <option value="55"> 55 </option>
+        <option value="60"> 60 </option>
+    </select>
 </div>
 
 <body id="mybody">
@@ -50,10 +88,10 @@
 
     <!-- POPUP CONNEXION -->
     <div id="popupLogin">
-        <img id="closeLoginButton" src="closebutton.png" height="50px" width="50px" style="cursor:pointer">
-
         <div id="not-header">
             <div id="generalContainer">
+                <img id="closeLoginButton" src="closebutton.png" height="50px" width="50px" style="cursor:pointer">
+
                 <div id="containerhead">
                     <h1 id="id_title"> IDENTIFICATION </h1>
                 </div>
@@ -84,6 +122,28 @@
         </div>
     </div>
 
+
+    <!-- POPUP CREATION REUNION -->
+    <div class="InfoReunion">
+        <img id="closeReuButton" src="closebutton.png" height="50px" width="50px" style="cursor:pointer">
+
+        <input placeholder="Nom de la réunion" id="reunion_name" type="input">
+        <div id="container_date_heure">
+            <div class="date_heure" id="original_creneau">
+                <p class="number_creneau"> Créneau 1 :</p>
+                <input class="date_reunion" type="date">
+                <div class="selectionTime" class="heure_reunion"></div> 
+                <input class="separateur" disabled value="-"> 
+                <div class="selectionTime" class="heure_fin_reunion"></div>
+                <button class="remove_creneau"> RETIRER LE CRENEAU </button>
+            </div>
+        </div>
+
+        <button id="create_creneau"> AJOUTER UN CRENEAU</button>
+
+        <button id="create"> CREATION DE LA REUNION </button> 
+    </div>
+
     <!-- AGENDA -->
     <div id="containerDiv" class="row no-gutters">
         <div id="agendaDiv" class="col-md-9">
@@ -105,7 +165,7 @@
                 <li>Samedi</li>
                 <li>Dimanche</li>
             </ul>
-            <ul class="row" id="numero-jour"></ul> <!-- est rempli par le js-->
+            <ul class="row" id="numero-jour" onmousedown="return false"></ul> <!-- est rempli par le js-->
         </div>
         <div id="voirReunionDiv" class="col-md-3"></div>
     </div>
