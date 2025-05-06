@@ -102,6 +102,7 @@ $(document).ready(function () {
         nbr_creneau++;
         let new_creneau = $("#original_creneau").clone();
         new_creneau.removeAttr("id");
+        new_creneau.find(".remove_creneau").css("display", "block");
         new_creneau.find(".number_creneau").html("Créneau "+nbr_creneau+" :");
         $("#container_date_heure").append(new_creneau.prop("outerHTML"));
         synchro_date(date);
@@ -116,4 +117,17 @@ $(document).ready(function () {
         $(".selectionTime select.minute-reu").val(add_zero(date_actuelle.getMinutes() + (5 - (date_actuelle.getMinutes() % 5)))); 
     }
 
+    $("#container_date_heure").on("click", ".remove_creneau" ,function (){
+        $(this).parent().remove();
+        nbr_creneau--;
+        update_number();
+    }); 
+
+    function update_number(){
+        let temp = 1;
+        $(".date_heure").each(function () {
+            $(this).find("p").html("Créneau " + temp + " :");
+            temp++;
+        });
+    }
 });

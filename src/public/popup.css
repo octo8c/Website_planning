@@ -47,8 +47,8 @@
 }
 
 .date_heure{
-    display: flex;
     gap:3px;
+    padding-bottom: 10px;
 }
 
 .InfoReunion select {
@@ -91,4 +91,14 @@
 .selectionTime *{
     margin: 0px !important;
     background-color: #e9e9ed;
+}
+
+.remove_creneau {
+    background-color: red;
+    display: none;
+    padding: 0px 10px;
+}
+
+.remove_creneau:hover{
+    background-color:  rgb(150, 3, 3);
 }
