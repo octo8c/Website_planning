@@ -1,3 +1,5 @@
+import { post_JSON } from "./utils.mjs";
+
 $(document).ready(function(){
     $("#modal-quitter").on('click',function(){
         $("#modal").css("display","none");
@@ -74,7 +76,7 @@ $(document).ready(function(){
                     console.log(attendees);
                     if(element.substring(4)==="VEVENT"){
                         console.log(""+tab);
-                        $.post('http://localhost:8080/importReunion',{
+                        post_JSON('importReunion',{
                             date_debut : tab[0] ,
                             date_fin : tab[1] , 
                             heure_debut : tab[2] ,
@@ -83,8 +85,8 @@ $(document).ready(function(){
                             descr : tab[5] , 
                             organisateur : tab[6] ,
                             invites : attendees
-                        },function(res){
-                            if(!res){
+                        }).then(function(res){
+                            if(!res.result){
                                 errorMessage("#InfoReunion","Erreur fichier au mauvais format");
                             }else{
                                 updateDisplayReunion("test");

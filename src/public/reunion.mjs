@@ -1,4 +1,4 @@
-import { updateDisplayReunion } from "./utils.mjs";
+import { updateDisplayReunion, post_JSON } from "./utils.mjs";
 
 $(document).ready(function () {
 
@@ -64,20 +64,21 @@ $(document).ready(function () {
             $("input#reunion_name").css("border","1px solid red");
             errorMessage(".InfoReunion","Erreur,veuillez donnez un nom a la reunion");
         }else if(verif_validité_heure(heure_reunion)){
-            $.post("http://localhost:8080/creation",
-                {
+            post_JSON("creation", {
                     nom_reunion : $("#reunion_name").val().trim(),
                     username : "test" ,/*Jsp encore comment on vas recupere le nom de l'utilisateur qui c'est connecte encore*/
                     creneau : heure_reunion
-                },function(result){
-                    for(let i=0;i<result.length;i++){
-                        if(!result[i]){//Message d'erreur 
-                           errorMessage(".InfoReunion",
-                            "Erreur vous aurez une autre reunion en cours au creneau "+i+heure_reunion[i].d+","
-                            +heure_reunion[i][0].h+":"+heure_reunion[i][0].m+"->"
-                            +heure_reunion[i][1].h+":"+heure_reunion[i][1].m);
-                        }
+            })
+            .then(function(result){
+                let res = result.result;
+                for(let i=0;i<res.length;i++){
+                    if(!res[i]){//Message d'erreur 
+                        errorMessage(".InfoReunion",
+                        "Erreur vous aurez une autre reunion en cours au creneau "+i+heure_reunion[i].d+","
+                        +heure_reunion[i][0].h+":"+heure_reunion[i][0].m+"->"
+                        +heure_reunion[i][1].h+":"+heure_reunion[i][1].m);
                     }
+                }
                 updateDisplayReunion('test');//TODO METTRE LE NOM DE L'UTILISATEUR A LA PLACE
                 $("#closeReuButton").click();
             });
@@ -85,6 +86,7 @@ $(document).ready(function () {
             errorMessage(".InfoReunion","Mettez une heure de debut inférieur a l'heure de fin");
         }
     });
+
 
     /**
      * 
@@ -134,4 +136,5 @@ $(document).ready(function () {
             temp++;
         });
     }
+    
 });

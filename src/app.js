@@ -8,6 +8,7 @@ require('dotenv').config();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.use(express.static('image'));   
+app.use(express.json());
 
 const pg = require('pg');
    let transporter = nodemailer.createTransport({
@@ -224,12 +225,12 @@ app.post("/inscription",(req,res)=>{
     operations("select * from utilisateur where username='"+req.body.username+"'",req.body.username,req.body.password,req.body.mail,1)
     .then(resultats =>{
     if(resultats==1){
-        res.send(true);
+        res.json({ result: true });
     }else if(resultats == 0){
         let variable = "Erreur nom d'utilisateur deja trouve" ;
-        res.send(variable);
+        res.json({result: variable});
     }else{
-        res.send("erreur ")
+        res.json({result: "erreur "});
     }})
     .catch(erreur =>console.log(erreur.stack));
 });
@@ -238,27 +239,25 @@ app.post("/login",(req,res)=>{
     operations("select * from utilisateur where username='"+req.body.username+"'",req.body.username,req.body.password,req.body.mail,0)
     .then(resultats =>{
     if(resultats==2){
-        res.send("Bien joue tu a reussi");
+        res.json({connecte:true, message: "Bien joue tu a reussi"});
     }else if(resultats == 1|| resultats == 0){
-        res.status(403);
-        let variable = resultats ==1 ? "Erreur mot de passe incorect":"Erreur utilisateur introuvable" ;
-        res.send(variable);
+        res.json({connecte:false, message:variable});
     }})
     .catch(erreur =>console.log(erreur.stack));
 });
 
 app.post("/mdpOublie",(req,res)=>{
     operations("select * from utilisateur where username='"+req.body.username+"'",req.body.username,req.body.username,2)
-    .then(resultats =>{if(resultats==1){
-        mail(process.env.MAIL,resultats.rows[0].mail,"Reinitialisation Mot de passe",
-            "Cliquez sur ce lien pour reinitialisez votre mot de passe : http://localhost:8080/mdp/"+req.body.username);
-        //TODO ENVOYEZ UN MAIL POUR REINIALISEZ LE MDP (en gros un mail avec un lien localhost:8080/username/newMDP)
-        res.send(true);
-    }else if(resultats == 1){
-        res.status(403);
-        let variable = resultats ==1 ? "Erreur mot de passe incorect":"Erreur utilisateur introuvable" ;
-        res.send(variable);
-    }})
+    .then(resultats =>{
+        if(resultats==1){
+            mail(process.env.MAIL,resultats.rows[0].mail,"Reinitialisation Mot de passe",
+                "Cliquez sur ce lien pour reinitialisez votre mot de passe : http://localhost:8080/mdp/"+req.body.username);
+            //TODO ENVOYEZ UN MAIL POUR REINIALISEZ LE MDP (en gros un mail avec un lien localhost:8080/username/newMDP)
+            res.json({result: true});
+        }else if(resultats == 1){
+            let variable = resultats ==1 ? "Erreur mot de passe incorect":"Erreur utilisateur introuvable" ;
+            res.json({result: variable});
+        }})
     .catch(erreur =>console.log(erreur.stack));
 });
 
@@ -272,36 +271,38 @@ app.post('/creation',async (req,res)=>{
         }
         console.log("Les reunion restantes : "+req.body.creneau);
         addReunion(req);
-        res.send(result);
+        res.json({result: result});
     })
-    .catch(err=>{res.send([false]);console.log(err);});
+    .catch(err=>{res.json({result : [false]});console.log(err);});
 });
 
 app.post('/getReunion',(req,res)=>{
     getReunion(req.body.username)
-    .then(result=>res.send(result))
-    .catch(error =>{console.log("Erreur ..."+error);res.send("Erreur d'username");});
+    .then(result=>res.json({result: result}))
+    .catch(error =>{console.log("Erreur ..."+error);res.json({result:"Erreur d'username"});});
 });
 app.post('/getInfo',(req,res)=>{
     getInfoReunion(req.body.id_reunion)
-    .then(result=>res.send(result))
-    .catch(err=>{res.send(err);console.log(err.stack);});
+    .then(result=>res.json({result: result}))
+    .catch(err=>{res.json({result: err});console.log(err.stack);});
 });
 
 app.post('/quittez-reunion',(req,res)=>{
     supParticipation(req.body.username,req.body.id_reunion,req.body.createur);
-    res.send(true);//On envoie pour confirmer ca a bien été enregistré
+    res.json({result: true});//On envoie pour confirmer ca a bien été enregistré
 });
 
 app.post('/invit',(req,res)=>{
-    invitReunion(req.body.username,req.body.inviter,req.body.id,req.body.nom_reunion).then(result=>res.send(result)).catch(err=>{console.log("Erreur mail :"+err);res.send(false);})
+    invitReunion(req.body.username,req.body.inviter,req.body.id,req.body.nom_reunion)
+    .then(result=>res.json({result: result}))
+    .catch(err=>{console.log("Erreur mail :"+err);res.json({result: false});})
 });
 
 app.post('/importReunion',(req,res)=>{
     console.log("IMPORT REUNION");
     importReunion(req)
-    .then(result=>res.send(true))
-    .catch(error=>{console.log(error.stack);res.send(false);});
+    .then(_result=>res.json({result: true}))
+    .catch(error=>{console.log(error.stack);res.json({result: false});});
 });
 
 app.get('/invit/:index/:username',(req,res)=>{
