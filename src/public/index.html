@@ -19,7 +19,7 @@
     <script src="index.js"></script>
     <script src="log.js"></script>
     <script src="calendar.js"></script>
-    <script src="reunion.js"></script>
+    <script src="reunion.mjs" type="module"></script>
 </head>
 
 
@@ -167,7 +167,12 @@
             </ul>
             <ul class="row" id="numero-jour" onmousedown="return false"></ul> <!-- est rempli par le js-->
         </div>
-        <div id="voirReunionDiv" class="col-md-3"></div>
+        <div id="voirReunionDiv" class="col-md-3">
+            <p>Reunion déja prévu : </p>
+            <div id="Reunion_fix"></div>
+            <p>Reunion sans horraires : </p>
+            <div id="Reunion_flex"></div>
+        </div>
     </div>
     <div id="popup-overlay" class="popup-overlay"></div>
     <div id="modal" class="modal">

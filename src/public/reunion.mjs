@@ -1,3 +1,5 @@
+import { updateDisplayReunion } from "./utils.mjs";
+
 $(document).ready(function () {
 
     let id_error = 0;
@@ -44,11 +46,13 @@ $(document).ready(function () {
 
         // récupération des heures de chaques créneaux
         $(".date_heure").each(function () {
-            unite_temp = []; // liste a uniquement 2 élément normalement
+            let unite_temp = []; // liste a uniquement 2 élément normalement
+            let date = $(this).find(".date_reunion").val();
             $(this).find(".selectionTime").each(function (){
                 unite_temp.push({
                     "h" : $(this).find(".heure-reu").val(),
-                    "m" : $(this).find(".minute-reu").val()
+                    "m" : $(this).find(".minute-reu").val() ,
+                    "d" : date
                 });
             });
             heure_reunion.push(unite_temp);            
@@ -58,28 +62,28 @@ $(document).ready(function () {
 
         if($("input#reunion_name").val().trim()===""){
             $("input#reunion_name").css("border","1px solid red");
-            errorMessage(".InfoReunion","Erreur veuillez donnez un nom a la reunion");
+            errorMessage(".InfoReunion","Erreur,veuillez donnez un nom a la reunion");
         }else if(verif_validité_heure(heure_reunion)){
-
             $.post("http://localhost:8080/creation",
                 {
                     nom_reunion : $("#reunion_name").val().trim(),
-                    date_reunion : $("#date_reunion").val(),
                     username : "test" ,/*Jsp encore comment on vas recupere le nom de l'utilisateur qui c'est connecte encore*/
-                    creneau : heure_reunion,
-                    heure : $("#heure_reunion").val() , 
-                    heure_fin : $("#heure_fin_reunion").val()
-                },function(res){
-                if(!res){//Message d'erreur 
-                    errorMessage(".InfoReunion","Erreur vous aurez une autre reunion en cours a ce moment la");
-                }
+                    creneau : heure_reunion
+                },function(result){
+                    for(let i=0;i<result.length;i++){
+                        if(!result[i]){//Message d'erreur 
+                           errorMessage(".InfoReunion",
+                            "Erreur vous aurez une autre reunion en cours au creneau "+i+heure_reunion[i].d+","
+                            +heure_reunion[i][0].h+":"+heure_reunion[i][0].m+"->"
+                            +heure_reunion[i][1].h+":"+heure_reunion[i][1].m);
+                        }
+                    }
                 updateDisplayReunion('test');//TODO METTRE LE NOM DE L'UTILISATEUR A LA PLACE
+                $("#closeReuButton").click();
             });
         }else{
             errorMessage(".InfoReunion","Mettez une heure de debut inférieur a l'heure de fin");
         }
-
-        
     });
 
     /**
