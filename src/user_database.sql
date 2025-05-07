@@ -10,13 +10,13 @@ create table utilisateur (
 create table reunion (
     id_reunion serial primary key,
     nom_reunion varchar(100) not null,/*Summary*/
-    descr text not null ,
+    descr text ,
+    heure time[] not null,
     creator_username varchar(25) not null,
-    date_reunion date not null,
-    date_fin date not null ,
-    heure time not null,
-    heure_fin time not null,
+    date_reunion date[] not null,
+    heure_fin time[] not null,
     foreign key (creator_username) references utilisateur(username) on update cascade on delete cascade 
+
 );
 
 create table participe (

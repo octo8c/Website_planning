@@ -72,30 +72,31 @@ async function operations(requete,username,motdepasse,mail,mode) {
  */
 async function addReunion(req){
     const reunion_nom = req.body.nom_reunion;
-    const username = req.body.organisateur;
-    const date_reunion = req.body.date_debut;
-    const heure = req.body.heure_debut;
-    const heure_fin_reunion = req.body.heure_fin;
-    const date_fin = req.body.date_fin;
-    const descr = req.body.descr;
+    const username = req.body.username;
+    var tab_heure = [],tab_heure_fin = [],date  = [];
+    for(let i =0;i<req.body.creneau.length;i++){
+        date [i] = req.body.creneau[i][0].d;
+        tab_heure[i]=req.body.creneau[i][0].h+":"+req.body.creneau[i][0].m+":00";
+        tab_heure_fin[i]=req.body.creneau[i][1].h+":"+req.body.creneau[i][1].m+":00";
+    }
+    console.log("Le tableau d'heure : "+tab_heure)
     const client = await pool.connect();
-    let new_date = date_reunion.replaceAll("/","-");
-    let new_date_fin = date_fin.replaceAll("/","-");
-    let tab = [reunion_nom,descr,username,new_date,new_date_fin,heure+":00",heure_fin_reunion+":00"];
-    await client.query("insert into reunion (nom_reunion,descr, creator_username, date_reunion,date_fin,heure,heure_fin) values ($1,$2,$3,$4,$5,$6,$7)",tab);
+    let tab = [tab_heure,reunion_nom,username,date,tab_heure_fin];
     let requete = "select id_reunion from reunion where heure=$1 and nom_reunion=$2 and creator_username=$3 and date_reunion=$4";
-    let res = await client.query(requete,[heure,reunion_nom,username,date_reunion]);
-    await client.query("insert into participe values ($1,$2,$3)",[res.rows[0].id_reunion,username,2]);
+    await client.query("insert into reunion (heure,nom_reunion, creator_username, date_reunion,heure_fin) values ($1,$2,$3,$4,$5)",tab);
+    let id = await client.query(requete,[tab_heure,reunion_nom,username,date]);//Pas 2 reunion qui peuvent commencer au meme horraire
+    await client.query("insert into participe values ($1,$2,$3)",[id.rows[0].id_reunion,username,2]);
     client.release();
-    return res.rows[0].id_reunion;
+    return id.rows[0].id_reunion;
 }
 
 async function getReunion(username){
     const client = await pool.connect();
     let requete = "select reunion.* from reunion join participe on participe.id_reunion = reunion.id_reunion"
-    +" where participe.username=$1 and reunion.date_reunion >= CURRENT_DATE order by ABS(reunion.date_reunion - CURRENT_DATE),reunion.heure";
+    +" where participe.username=$1";
     let res = await client.query(requete,[username]);
     client.release();
+    console.log("Oui j'ai bieb finis"+res);
     return res;
 }
 /**
@@ -106,28 +107,34 @@ async function getReunion(username){
  * @param {*} heure_fin 
  * @returns 
  */
-async function checkReunion(username,date,heure,heure_fin){
+async function checkReunion(username,creneau_list){
     const client = await pool.connect();
-    let res = await client.query("select reunion.heure_fin , reunion.heure from reunion join participe on participe.id_reunion = reunion.id_reunion where participe.username=$1 and reunion.date_reunion=$2",[username,date]);
-    client.release();
-    var tab = heure.split(":");
-    var tab_fin = heure_fin.split(":");
-    var heureMin = parseInt(tab[0]) * 60 + parseInt(tab[1]);
-    var heureMax = parseInt(tab_fin[0]) * 60 + parseInt(tab_fin[1]);
-    var flag = true;
-    for(let row of res.rows){
-        let tmpTab = row.heure.split(":");
-        let tmpTabFin = row.heure_fin.split(":");
-        let tmpMin = parseInt(tmpTab[0]) * 60 + parseInt(tmpTab[1]);
-        let tmpMax = parseInt(tmpTabFin[0]) * 60 + parseInt(tmpTabFin[1]);
-        if((tmpMin < heureMin && tmpMax < heureMin)||(tmpMax >heureMax && tmpMin > heureMax)||
-        (heureMin < tmpMin && heureMax < tmpMin)||(heureMax>tmpMax && heureMin >tmpMax)){
-            continue;
+    let list_result = [];
+    for(let ind =0;ind<creneau_list.length;ind++){
+        let res = await client.query("select reunion.heure_fin , reunion.heure from reunion join participe on participe.id_reunion = reunion.id_reunion where participe.username=$1 and reunion.date_reunion=$2",[username,[creneau_list[ind][0].d]]);
+        var heure = creneau_list[ind][0];
+        var heure_fin = creneau_list[ind][1];
+        var heureMin = parseInt(heure.h) * 60 + parseInt(heure.m);
+        var heureMax = parseInt(heure_fin.h) * 60 + parseInt(heure_fin.m);
+        var flag = true;
+        console.log("Heure reunion :"+heureMin+"le temps max "+heureMax);
+        for(let row of res.rows){
+            let tmpTab = row.heure;
+            let tmpTabFin = row.heure_fin;
+            let tmpMin = parseInt(tmpTab.h) * 60 + parseInt(tmpTab.m);
+            let tmpMax = parseInt(tmpTabFin.h) * 60 + parseInt(tmpTab.m);
+            console.log("L'heure reunion :"+tmpMin+"->"+tmpMax);
+            if((tmpMin < heureMin && tmpMax < heureMin)||(tmpMax >heureMax && tmpMin > heureMax)||
+            (heureMin < tmpMin && heureMax < tmpMin)||(heureMax>tmpMax && heureMin >tmpMax)){
+                continue;
+            }
+            flag = false;
+            break;
         }
-        flag = false;
-        break;
+        list_result.push(flag);
     }
-    return flag;
+    client.release();
+    return list_result;
 }
 
 async function supParticipation(username,id_reunion,createur){
@@ -256,20 +263,24 @@ app.post("/mdpOublie",(req,res)=>{
 });
 
 app.post('/creation',async (req,res)=>{
-    checkReunion(req.body.username,req.body.date_reunion,req.body.heure_debut,req.body.heure_fin)
+    checkReunion(req.body.username,req.body.creneau)
     .then(result=>{
-        if(result){
-            addReunion(req)
-            .catch(err=>console.log(err.stack));
+        for(let i=0;i<result.length;i++){
+            if(!result[i]){
+                req.body.creneau.splice(i,1);//On retire tout les horraires qui ne sont pas possibles
+            }
         }
-        res.send(result);})
-    .catch(err=>{res.send(false);console.log(err.stack);});
+        console.log("Les reunion restantes : "+req.body.creneau);
+        addReunion(req);
+        res.send(result);
+    })
+    .catch(err=>{res.send([false]);console.log(err);});
 });
 
 app.post('/getReunion',(req,res)=>{
     getReunion(req.body.username)
     .then(result=>res.send(result))
-    .catch(error =>{console.log("Erreur ...");res.send("Erreur d'username");});
+    .catch(error =>{console.log("Erreur ..."+error);res.send("Erreur d'username");});
 });
 app.post('/getInfo',(req,res)=>{
     getInfoReunion(req.body.id_reunion)
