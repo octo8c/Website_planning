@@ -10,7 +10,7 @@ create table utilisateur (
 create table reunion (
     id_reunion serial primary key,
     nom_reunion varchar(100) not null,/*Summary*/
-    descr text not null ,
+    descr text ,
     heure time[] not null,
     creator_username varchar(25) not null,
     date_reunion date[] not null,

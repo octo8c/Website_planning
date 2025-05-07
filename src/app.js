@@ -87,7 +87,7 @@ async function addReunion(req){
     let id = await client.query(requete,[tab_heure,reunion_nom,username,date]);//Pas 2 reunion qui peuvent commencer au meme horraire
     await client.query("insert into participe values ($1,$2,$3)",[id.rows[0].id_reunion,username,2]);
     client.release();
-    return res.rows[0].id_reunion;
+    return id.rows[0].id_reunion;
 }
 
 async function getReunion(username){
@@ -107,7 +107,6 @@ async function getReunion(username){
  * @param {*} heure_fin 
  * @returns 
  */
-asyn
 async function checkReunion(username,creneau_list){
     const client = await pool.connect();
     let list_result = [];
