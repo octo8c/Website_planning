@@ -1,6 +1,7 @@
 drop table if exists utilisateur cascade;
 drop table if exists reunion cascade;
 drop table if exists participe cascade;
+drop table if exists invite cascade ;
 create table utilisateur (
     username varchar(25) primary key,
     adresse_mail varchar(100) not null ,
@@ -24,7 +25,11 @@ create table participe (
     username varchar(25) not null , 
     role_reunion integer not null , /*0 aucun droit 1 peut inviter des gens 2 proprietaires */ 
     primary key (id_reunion , username) ,
-    foreign key (username) references utilisateur(username) on update cascade on delete cascade, 
+);
+
+create table invite(
+    id_reunion integer not null , 
+    mail varchar(100) not null ,
     foreign key (id_reunion) references reunion(id_reunion) on update cascade on delete cascade
 );
 

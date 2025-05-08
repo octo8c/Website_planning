@@ -5,12 +5,11 @@ export function updateDisplayReunion(username){
     $.post('http://localhost:8080/getReunion',{username : username},function(res){
         $("#Reunion_fix").empty();
         $("#Reunion_flex").empty();
+        $("#Reunion_invit").empty();
         var date = new Date();
         var list_date = [];//Liste de liste (chaque liste contient toutes les info de la reunion)
-        /*Ajoute les dates dans le cadre a droite */
         let ind = 0;
         for(let row of res.rows){
-            console.log("La taille du plateau : "+row.heure_fin.length);
             if(row.heure_fin.length===1){
                 let tabFin = row.heure_fin[0].split(":");
                 let tempsMax = parseInt(tabFin[0]) * 60 + parseInt(tabFin[1]);
@@ -24,7 +23,6 @@ export function updateDisplayReunion(username){
                     ind++;
                 }    
             }else{/*Toutes les reunions qui n'ont pas d'horraires definis */
-                console.log("Ajiut dans le flex");
                 $("#Reunion_flex").append("<a href =\"\"id="+row.id_reunion+" >Reunion de +"+row.creator_username+"</a><br>");
                 $("a#"+row.id_reunion).on('click',function(e){e.preventDefault();viewReunion(username,row);});
             }
