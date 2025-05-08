@@ -53,6 +53,7 @@ $(document).ready(function(){
         e.preventDefault();
         if(checkInput(to_check_sub)){
             post_JSON("inscription",{username : $("#user_sub").val().trim(),password : $("#pass_sub").val().trim(),mail : $("#mail_sub").val()})
+            .then(res=>res.json())
             .then(function(res){
                 //TODO faire quelque chose si la connection a marche
             });
@@ -63,6 +64,7 @@ $(document).ready(function(){
         e.preventDefault();
         if(checkInput(to_check_oub)){
             post_JSON("mdpOublie",{username : $("#user_fg").val().trim()})
+            .then(res=>res.json())
             .then(function(res){
                 //TODO faire quelque chose si la demande de mdp est passe envoyez un mail
             });

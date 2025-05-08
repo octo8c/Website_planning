@@ -75,6 +75,7 @@ async function addReunion(req){
     const reunion_nom = req.body.nom_reunion;
     const username = req.body.username;
     var tab_heure = [],tab_heure_fin = [],date  = [];
+    console.log(req.body.creneau);
     for(let i =0;i<req.body.creneau.length;i++){
         date [i] = req.body.creneau[i][0].d;
         tab_heure[i]=req.body.creneau[i][0].h+":"+req.body.creneau[i][0].m+":00";
@@ -84,6 +85,7 @@ async function addReunion(req){
     const client = await pool.connect();
     let tab = [tab_heure,reunion_nom,username,date,tab_heure_fin];
     let requete = "select id_reunion from reunion where heure=$1 and nom_reunion=$2 and creator_username=$3 and date_reunion=$4";
+    console.log(tab);
     await client.query("insert into reunion (heure,nom_reunion, creator_username, date_reunion,heure_fin) values ($1,$2,$3,$4,$5)",tab);
     let id = await client.query(requete,[tab_heure,reunion_nom,username,date]);//Pas 2 reunion qui peuvent commencer au meme horraire
     await client.query("insert into participe values ($1,$2,$3)",[id.rows[0].id_reunion,username,2]);
