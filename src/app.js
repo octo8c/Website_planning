@@ -35,35 +35,39 @@ const pool = new pg.Pool({
  * @param {*} username le nom de l'tutlisateur
  * @param {*} motdepasse le mots de passe de l'utilisateur
  * @param {*} mode Le mode de connexion 0 pour la connexion , 1 inscription , 2 mdp oublie
- * @returns Renvoie si la connexion c'est bien passe
+ * @returns Renvoie un entier > 0 si la connexion c'est bien passe
  */
-async function operations(requete,username,motdepasse,mail,mode) {
+async function operations(username,motdepasse,mail,mode) {
     const client = await pool.connect();
-    let res = await client.query (requete);
+    let res = await client.query ("select * from utilisateur where username='"+username+"'");
     let flag = false;
     for(row of res.rows){
         if(row.mot_de_passe===motdepasse&&mode==0){//Le client est valide
             client.release();
-            return 2;
+            return row.id;
         }else if (mode===1){
             client.release();
-            return 0;//Deja un utilisateur avec le meme pseudo
+            return -1;//Deja un utilisateur avec le meme pseudo
         }else if(mode===2){
             res = await client.query("update utilisateur set mot_de_passe = "+motdepasse+"where username="+username);
             client.release();
-            return 2;
+            return row;
         }
         flag = true;
     }
-    if(mode===1){//Tentaive d'inscription et aucun utilisateur qui a le meme pseudo 
+    if(mode===1){//Tentative d'inscription et aucun utilisateur qui a le meme pseudo 
         await client.query("Insert into utilisateur values ($1,$2,$3)",[username,mail,motdepasse]);
-        let res = client.query("select * from utilisateur");
+        let res = await client.query("select id from utilisateur where username=$1 and mot_de_passe=$2", [username, motdepasse]);
+        if (res.length == 0){
+            console.log("impossible d'ajouter l'utilisateur dans la base de donnée");
+            return -2;
+        }
         client.release();
-        return 1;//L'utilisateur est bien ajouté
+        return res[0];//L'utilisateur est bien ajouté
     }
     client.release();
-    if(flag) return 1;//Pas le bon mdp
-    else return 0;//Pas ton nom d'utilisateur
+    if(flag) return -2;//Pas le bon mdp
+    else return -1;//Pas ton nom d'utilisateur
 }
 /**
  * Creer la reunion et ajoute le createur a la table des participants
@@ -105,7 +109,7 @@ async function getReunion(mail){
     let requete = "select reunion.* from reunion join participe on participe.id_reunion = reunion.id_reunion"
     +" where participe.mail=$1";
     let res = await client.query(requete,[mail]);
-    let res_invit = await client.query("select reunion.* from reunion join invite on invite.id_reunion=reunion.id_reunion join utilisateur on utilisateur.mail =invite.mail where utilisateur.username=$1");
+    let res_invit = await client.query("select reunion.* from reunion join invite on invite.id_reunion=reunion.id_reunion join utilisateur on utilisateur.mail =invite.mail where utilisateur.id=$1");
     client.release();
     return [res,res_invit];
 }
@@ -154,6 +158,17 @@ async function supParticipation(username,id_reunion,createur){
         client.query("delete from participe where id_reunion=$1 and username =$2",[id_reunion,username]);
     }
     client.release();
+}
+/**
+ * Renvoie toutes les info de l'utilisateur 
+ * @param {*} id L'id de l'utilisateur a recupere
+ * @returns Toutes les info
+ */
+async function getInfoUser(id){
+    const client = await pool.connect();
+    let res= await client.query("select * from utilisateur where id=$1",[id]);
+    client.release();
+    return res;
 }
 
 async function getInfoReunion(id_reunion){
@@ -254,48 +269,66 @@ async function resInvit(reponse,mail,id_reunion){
         client.query("insert into participe values($1,$2)",[id_reunion,mail,0]); 
     }
 }
+/**
+ * Verifie que l'utilisateur a bien été invité a la reunion id_reunion
+ * @param {*} id_reunion 
+ * @param {*} mail 
+ * @returns 
+ */
+async function checkInvit(id_reunion,mail){
+    const client = await pool.connect();
+    let res = await client.query("select * from invit where id_reunion=$2 and mail=$1");
+    client.release();
+    return res.rows[0]===undefined;
+}
 
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 
 app.post("/inscription",(req,res)=>{
-    operations("select * from utilisateur where username='"+req.body.username+"'",req.body.username,req.body.password,req.body.mail,1)
+    operations(req.body.username,req.body.password,req.body.mail,1)
     .then(resultats =>{
-    if(resultats==1){
-        res.json({ result: true });
-    }else if(resultats == 0){
-        let variable = "Erreur nom d'utilisateur deja trouve" ;
-        res.json({result: variable});
-    }else{
-        res.json({result: "erreur "});
-    }})
+        if(resultats>0){
+            res.json({ result: true, id: resultats });
+        }else if(resultats == -1){
+            res.json({result: false, message: "Erreur nom d'utilisateur deja utilisé", id: -1});
+        }else{
+            res.json({result: false, message: "erreur ", id: -1});
+        }})
     .catch(erreur =>console.log(erreur.stack));
 });
 
 app.post("/login",(req,res)=>{
-    operations("select * from utilisateur where username='"+req.body.username+"'",req.body.username,req.body.password,req.body.mail,0)
+    operations(req.body.username,req.body.password,req.body.mail,0)
     .then(resultats =>{
-    if(resultats==2){
-        res.json({connecte:true, message: "Bien joue tu a reussi"});
-    }else if(resultats == 1|| resultats == 0){
-        res.json({connecte:false, message:variable});
-    }})
+        if(resultats>0){
+            getInfoUser(resultats).then(result=>
+                res.json({connecte:true, message:"connecté!", id:resultats,info:result.rows[0]})
+            );
+        }else if(resultats == -1){
+            res.json({connecte:false, message:"nom d'utilisateur inconnu!", id:-1});
+        }else if(resultats == -2){
+            res.json({connecte:false, message:"mot de passe incorrect", id: -1});
+        } else {
+            res.json({connecte:false, message:"erreur inconnue", id:-1});
+        }
+    })
     .catch(erreur =>console.log(erreur.stack));
 });
 
 app.post("/mdpOublie",(req,res)=>{
-    operations("select * from utilisateur where username='"+req.body.username+"'",req.body.username,req.body.username,2)
+    operations(req.body.username,req.body.username,2)
     .then(resultats =>{
-        if(resultats==1){
-            mail(process.env.MAIL,resultats.rows[0].mail,"Reinitialisation Mot de passe",
+        if (resultats < 0) {
+            res.json({result: false, message: "Erreur: utilisateur introuvable!"});
+        }else{
+            mail(process.env.MAIL,resultats.mail,"Reinitialisation Mot de passe",
                 "Cliquez sur ce lien pour reinitialisez votre mot de passe : http://localhost:8080/mdp/"+req.body.username);
             //TODO ENVOYEZ UN MAIL POUR REINIALISEZ LE MDP (en gros un mail avec un lien localhost:8080/username/newMDP)
             res.json({result: true});
-        }else if(resultats == 1){
-            let variable = resultats ==1 ? "Erreur mot de passe incorect":"Erreur utilisateur introuvable" ;
-            res.json({result: variable});
-        }})
+        }
+    })
     .catch(erreur =>console.log(erreur.stack));
 });
 
@@ -344,9 +377,19 @@ app.post('/horraireReunion',(req,res)=>{
         .catch(err=>{console.log(err);res.json({err:err});});
 });
 
-app.post('resultInvit',(req,res)=>{
-    
+app.post('/resultInvit',(req,res)=>{
+    resInvit(req.body.reponse,req.body.mail,req.body.id_reunion)
+    .then(result=>res.json({ok:true}))
+    .catch(err=>{console.log(err);res.json({ok:false})});
 });
+/**
+ * Renvoie les info de l'utilisateur
+ */
+app.post('/infoUser',(req,res)=>{
+    getInfoUser(req.body.id)
+    .then(result=>res.json({requete:result}))
+    .catch(err=>{console.log(err);res.json({requete:undefined})});
+})
 
 app.post('/importReunion',(req,res)=>{
     importReunion(req)
@@ -354,9 +397,16 @@ app.post('/importReunion',(req,res)=>{
     .catch(error=>{console.log(error.stack);res.json({result: false});});
 });
 
-app.get('/invit/:index/:username',(req,res)=>{//L'id de la reunion 
-    res.render("invit",{cons:reunion(req.params.index)});
-    res.sendFile(path.join(__dirname,'public/invit.ejs'));
+app.get('/invit/:index/:mail',(req,res)=>{//L'id de la reunion 
+    checkInvit(req.params.index,req.params.mail).then(result=>{
+        if (result){
+            res.render("invit",{cons:reunion(req.params.index)});
+            res.sendFile(path.join(__dirname,'public/views/invit.ejs'));
+        }else{
+            res.render("erreur",{nom:req.params.mail});
+            res.sendFile(path.join(__dirname,'public/views/erreur.html'));
+        }
+    });
 });
 //recuperez toutes les info des reunion et supprimez les invit quand ils ont clique sur le bouton du fichier invit
 app.get('mdp/:username',(req,res)=>{

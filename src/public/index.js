@@ -1,6 +1,9 @@
-import { post_JSON } from "./utils.mjs";
+import { getCookie, post_JSON, removeCookie, updateUser } from "./utils.mjs";
 
 $(document).ready(function(){
+
+    updateUser();
+
     $("#modal-quitter").on('click',function(){
         $("#modal").css("display","none");
         $("#modal-conf").css("display","inline");
@@ -91,7 +94,7 @@ $(document).ready(function(){
                             if(!res.result){
                                 errorMessage("#InfoReunion","Erreur fichier au mauvais format");
                             }else{
-                                updateDisplayReunion("test");
+                                updateDisplayReunion(getCookie("username"));
                             }
                         });
                     }
@@ -112,5 +115,12 @@ $(document).ready(function(){
 
     // on enleve l'ID de l'element pour eviter des doublons d'ID
     $(".selectionTime").find("*").removeAttr("id");
+
+
+    $("#disconnectButton").on("click", function (){
+        removeCookie("id");
+        removeCookie("username");
+        updateUser();
+    });
 
 });

@@ -83,6 +83,10 @@
 
         <div id="connexionDiv" class="offset-md-1 col-md-2">
             <button id="loginButton"> CONNEXION </button>
+            <button id="disconnectButton"> DECONNEXION </button>
+        </div>
+        <div id="profilDiv" class="offset-md-1 col-md-2">
+            <img src="https://static.vecteezy.com/system/resources/thumbnails/019/879/186/small/user-icon-on-transparent-background-free-png.png" width="50px" height="50px">
         </div>
     </header>
 
@@ -101,23 +105,23 @@
                     <button class="tablinks" id="conex">Connexion</button>
                 </div>
     
-                <form action="/login" method="POST" id="Connexion" class="tabcontent">
+                <div id="Connexion" class="tabcontent">
                     <input class="log_input" type="text" id="user_log" name="username" placeholder="Username">
                     <input class="log_input" type="password" id="pass_log" name="password" placeholder="Password" required="true" autocomplete="current-password">
-                    <button class="log_button" type="submit"> Connexion </button>
+                    <button class="log_button"> Connexion </button>
                     <a href="" id="lostPassword">Mot de passe oubliée</a>
-                </form>
-                <form action="/inscription" method="POST" id="Inscription" class="tabcontent">
+                </div>
+                <div id="Inscription" class="tabcontent">
                     <input class="log_input" type="text" id="user_sub" placeholder="Username">
                     <input class="log_input" type="text" id="mail_sub" placeholder="Email">
                     <input class="log_input" type="password" id="pass_sub" placeholder="Password" required="true" autocomplete="new-password">
                     <input class="log_input" type="password" id="check_sub" placeholder="Confirm password" required="true" autocomplete="current-password">
-                    <button class="log_button" type="submit"> Inscription </button>
-                </form>
-                <form action="/mdpOublie" method="post" id="mdpOublie" class="tabcontent">
+                    <button class="log_button"> Inscription </button>
+                </div>
+                <div id="mdpOublie" class="tabcontent">
                     <input class="log_input" type="text" id="user_fg" placeholder="Username">
-                    <button class="log_button" type="submit"> Demande </button>
-                </form>
+                    <button class="log_button"> Demande </button>
+                </div>
             </div>
         </div>
     </div>

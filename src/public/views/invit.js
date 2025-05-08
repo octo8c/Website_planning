@@ -1,4 +1,4 @@
-const { post_JSON } = require("./public/utils.mjs");
+const { post_JSON } = require("../utils.mjs");
 
 $(document).ready(function(){
     $("#yes").on('change',function(){

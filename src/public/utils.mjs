@@ -92,7 +92,7 @@ export function viewReunion(username,row){
                 $("#modal-conf").css("display","none");
                 $("#popup-overlay").css("display","none");
             });
-            updateDisplayReunion(username);
+            updateDisplayReunion(getCookie("username"));
         });
     });
 }
@@ -105,4 +105,52 @@ export async function post_JSON(url, json_to_send){
         },
         body: JSON.stringify(json_to_send)
     });
+}
+
+export function setCookie(name, value){
+    document.cookie = name+"="+value+"; path=/";
+}
+
+export function getCookie(name){
+    const cookies = document.cookie.split("; ");
+    for (let cookie of cookies){
+        const [nom, valeur] = cookie.split("=");
+        if (nom==name) return valeur;
+    }
+    return undefined;
+}
+
+export function removeCookie(name){
+    document.cookie= name+"=0; expires=Sat, 01 Jan 2000 00:00:00 UTC; path=/;";
+}
+
+let id_error = 0;
+
+export function setIdError(new_value){
+    id_error = new_value;
+}
+
+export function errorMessage(zone,text){
+    $(zone).append("<p style=color:red id=errorMessage"+id_error+">"+text+"</p>");
+    let erreur = id_error;
+    id_error++;
+    setTimeout(()=>{
+        $("#errorMessage"+erreur).fadeOut(1000,function(){
+            $(this).remove();
+        });
+    },3000);
+}
+
+
+export function updateUser(){
+    updateDisplayReunion(getCookie("username"));
+    if (getCookie("id") != undefined){ // si l'user est connecté
+        $("#loginButton").css("display", "none");
+        $("#disconnectButton").css("display", "block");
+        $("#Create_reunion").css("visibilty","visible");
+        // TODO : mettre bouton de déconnexion
+    } else {
+        $("#disconnectButton").css("display", "none");
+        $("#loginButton").css("display", "block");
+    }
 }
