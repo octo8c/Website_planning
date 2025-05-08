@@ -2,7 +2,10 @@
      * Prends l'username de l'utilisateur et affiche toutes les reunion auquel il vas avoir lieu dans les prochains jours (tries par ordre d'heure)
      */
 export function updateDisplayReunion(username){
-    $.post('http://localhost:8080/getReunion',{username : username},function(res){
+    post_JSON("getReunion", {username:username})
+    .then(result => result.json())
+    .then(function(res){
+        let rows = res.result.rows;
         $("#Reunion_fix").empty();
         $("#Reunion_flex").empty();
         $("#Reunion_invit").empty();
@@ -37,8 +40,8 @@ export function updateDisplayReunion(username){
         });
         //On les ajoutes alors au reunion prévus
         for(let i = 0;i<list_date.length;i++){
-            $("#Reunion_fix").append("<a href =\"\"id="+res.rows[list_date[i][0]].id_reunion+" >Reunion a "+res.rows[list_date[i][0]].heure[0].substring(0,5)+" , le "+res.rows[list_date[i][0]].date_reunion[0].substring(0,10)+".Createur : "+res.rows[list_date[i][0]].creator_username+"</a><br>");
-            $("a#"+res.rows[list_date[i][0]].id_reunion).on('click',function(e){e.preventDefault();viewReunion(username,res.rows[list_date[i][0]]);});
+            $("#Reunion_fix").append("<a href =\"\"id="+rows[list_date[i][0]].id_reunion+" >Reunion a "+rows[list_date[i][0]].heure[0].substring(0,5)+" , le "+rows[list_date[i][0]].date_reunion[0].substring(0,10)+".Createur : "+rows[list_date[i][0]].creator_username+"</a><br>");
+            $("a#"+rows[list_date[i][0]].id_reunion).on('click',function(e){e.preventDefault();viewReunion(username,rows[list_date[i][0]]);});
         }
 
     });
@@ -47,7 +50,10 @@ export function updateDisplayReunion(username){
 
 export function viewReunion(username,row){
     let createur = "";
-    $.post('http://localhost:8080/getInfo',{id_reunion:row.id_reunion},function(resultats){
+
+    post_JSON("getInfo", {id_reunion:row.id_reunion})
+    .then(resultat => resultat.json())
+    .then(function(resultats){
         let participants = "";
         $("#display-info").append("<h3><b>"+row.nom_reunion+"</b></h3>");
         if(row.date_reunion.length === 1){
@@ -59,7 +65,7 @@ export function viewReunion(username,row){
                 $("#display-info").append("<p>Le"+row.date_reunion[i]+","+row.heure[i]+"->"+row.heure_fin[i]+"</p>");
             }
         }
-        for (let participant of resultats.rows){
+        for (let participant of resultats.result.rows){
             participants = participants + ", " + participant.username;
             if(participant.role_reunion===2){
                 createur = participant.username;
@@ -69,22 +75,34 @@ export function viewReunion(username,row){
         participants = participants+".";
         $("#display-info").append("<p><b>Le créateur de la reunion : "+createur+"</b></p>");
         $("#display-info").append("<p> Les participants :"+participants+"</p>");
-    });
-    $("#popup-overlay").css("display","inline");//On affiche les display
-    $("#modal").css("display","inline");
 
-    $("#modalButton").on('click',function(){
-        $("#display-info").empty();
-        $("#popup-overlay").css("display","none");
-        $("#modal").css("display","none");
-    });
-
-    $("#conf-quittez").on('click',function(){
-        $.post('http://localhost:8080/quittez-reunion',{username : username,id_reunion:row.id_reunion,createur :createur },
-            function(res){
+        $("#popup-overlay").css("display","inline");//On affiche les display
+        $("#modal").css("display","inline");
+    
+        $("#modalButton").on('click',function(){
+            $("#display-info").empty();
+            $("#popup-overlay").css("display","none");
+            $("#modal").css("display","none");
+        });
+    
+        $("#conf-quittez").on('click',function(){
+            post_JSON("quittez-reunion", {username:username, id_reunion:row.id_reunion, createur:createur})
+            .then(resultat => resultat.json())
+            .then(function(res){      
                 $("#modal-conf").css("display","none");
                 $("#popup-overlay").css("display","none");
+            });
+            updateDisplayReunion(username);
         });
-        updateDisplayReunion(username);
+    });
+}
+
+export async function post_JSON(url, json_to_send){
+    return fetch("http://localhost:8080/"+url, {
+        method:"POST",
+        headers:{
+            "Content-Type" : "application/json"
+        },
+        body: JSON.stringify(json_to_send)
     });
 }

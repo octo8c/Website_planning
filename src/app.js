@@ -8,6 +8,8 @@ require('dotenv').config();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.use(express.static('image'));   
+app.use(express.json());
+app.set("view engine","ejs");
 
 const pg = require('pg');
    let transporter = nodemailer.createTransport({
@@ -74,6 +76,7 @@ async function addReunion(req){
     const reunion_nom = req.body.nom_reunion;
     const username = req.body.username;
     var tab_heure = [],tab_heure_fin = [],date  = [];
+    console.log(req.body.creneau);
     for(let i =0;i<req.body.creneau.length;i++){
         date [i] = req.body.creneau[i][0].d;
         tab_heure[i]=req.body.creneau[i][0].h+":"+req.body.creneau[i][0].m+":00";
@@ -83,23 +86,26 @@ async function addReunion(req){
     const client = await pool.connect();
     let tab = [tab_heure,reunion_nom,username,date,tab_heure_fin];
     let requete = "select id_reunion from reunion where heure=$1 and nom_reunion=$2 and creator_username=$3 and date_reunion=$4";
+    console.log(tab);
     await client.query("insert into reunion (heure,nom_reunion, creator_username, date_reunion,heure_fin) values ($1,$2,$3,$4,$5)",tab);
     let id = await client.query(requete,[tab_heure,reunion_nom,username,date]);//Pas 2 reunion qui peuvent commencer au meme horraire
-    await client.query("insert into participe values ($1,$2,$3)",[id.rows[0].id_reunion,username,2]);
+    if(req.body.participe){
+        await client.query("insert into participe values ($1,$2,$3)",[id.rows[0].id_reunion,req.body.mail,2]);
+    }
     client.release();
     return id.rows[0].id_reunion;
 }
 /**
  * Renvoie les info de toutes les reunion ou l'utilisateur est invité / participe
- * @param {*} username 
+ * @param {*} mail
  * @returns 
  */
-async function getReunion(username){
+async function getReunion(mail){
     const client = await pool.connect();
     let requete = "select reunion.* from reunion join participe on participe.id_reunion = reunion.id_reunion"
-    +" where participe.username=$1";
-    let res = await client.query(requete,[username]);
-    let res_invit = await client.query("select reunion.* from reunion join invite on invite.id_reunion=reunion.id_reunion join utilisateur on utilisateur.adresse_mail =invite.mail where utilisateur.username=$1");
+    +" where participe.mail=$1";
+    let res = await client.query(requete,[mail]);
+    let res_invit = await client.query("select reunion.* from reunion join invite on invite.id_reunion=reunion.id_reunion join utilisateur on utilisateur.mail =invite.mail where utilisateur.username=$1");
     client.release();
     return [res,res_invit];
 }
@@ -111,11 +117,11 @@ async function getReunion(username){
  * @param {*} heure_fin 
  * @returns 
  */
-async function checkReunion(username,creneau_list){
+async function checkReunion(mail,creneau_list){
     const client = await pool.connect();
     let list_result = [];
     for(let ind =0;ind<creneau_list.length;ind++){
-        let res = await client.query("select reunion.heure_fin , reunion.heure from reunion join participe on participe.id_reunion = reunion.id_reunion where participe.username=$1 and reunion.date_reunion=$2",[username,[creneau_list[ind][0].d]]);
+        let res = await client.query("select reunion.heure_fin , reunion.heure from reunion join participe on participe.id_reunion = reunion.id_reunion where participe.mail=$1 and reunion.date_reunion=$2",[mail,[creneau_list[ind][0].d]]);
         var heure = creneau_list[ind][0];
         var heure_fin = creneau_list[ind][1];
         var heureMin = parseInt(heure.h) * 60 + parseInt(heure.m);
@@ -127,7 +133,6 @@ async function checkReunion(username,creneau_list){
             let tmpTabFin = row.heure_fin;
             let tmpMin = parseInt(tmpTab.h) * 60 + parseInt(tmpTab.m);
             let tmpMax = parseInt(tmpTabFin.h) * 60 + parseInt(tmpTab.m);
-            console.log("L'heure reunion :"+tmpMin+"->"+tmpMax);
             if((tmpMin < heureMin && tmpMax < heureMin)||(tmpMax >heureMax && tmpMin > heureMax)||
             (heureMin < tmpMin && heureMax < tmpMin)||(heureMax>tmpMax && heureMin >tmpMax)){
                 continue;
@@ -163,9 +168,9 @@ async function invitReunion(username,inviter,id,nom_reunion,remove) {
     let mail = "";
     let flag = false;
     if(!username.includes("@")){
-        let res = await client.query("select adresse_mail from utilisateur where username=$1",username);
+        let res = await client.query("select mail from utilisateur where username=$1",username);
         if(res.rows!==undefined){
-            mail = res.rows[0].adresse_mail;
+            mail = res.rows[0].mail;
         }else{
             return false;
         }
@@ -188,6 +193,12 @@ async function mail(from,to,subject,text){
         subject : "Invitation pour une reunion" , 
         text : "Bonjours vous etes invitez , voulez vous joindre a la reunion "+nom_reunion+" ? http://localhost/8080/invit/"+id+"/"+username ,
     });
+}
+async function reunion(id_reunion){
+    const client = await pool.connect();
+    let res = client.query("select * from reunion where id_reunion=$1",[id_reunion]);
+    client.release();
+    return res;
 }
 
 async function exists(username){
@@ -213,7 +224,7 @@ async function importReunion(req){
     const client = await pool.connect();
     for(let participant_addr of req.body.invites){
         console.log(participant_addr);
-        let res = await client.query("select username from utilisateur where adresse_mail=$1",[participant_addr]);
+        let res = await client.query("select username from utilisateur where mail=$1",[participant_addr]);
         let pseudo = "";
         if(res.rows[0]!==undefined){
             pseudo = res.rows[0].username;
@@ -223,12 +234,25 @@ async function importReunion(req){
             console.log("ENVOIE D'UNE REQUETE");
             pseudo = participant_addr.split("@")[0];
             console.log("Le nouveau pseudo :"+pseudo);
-            await client.query("insert into utilisateur(username,adresse_mail) values ($1,$2)",[pseudo,participant_addr]);
+            await client.query("insert into utilisateur(username,mail) values ($1,$2)",[pseudo,participant_addr]);
         }
         console.log("Le pseudo : "+pseudo+" id : "+id);
         //await client.query("insert into participe values ($1,$2,0)",[id,pseudo]);
     }
     return 0;
+}
+/**
+ * Supprime l'utilisateur de la table invit et l'ajoute a la table participe si il la souhaite
+ * @param {*} reponse 
+ * @param {*} mail 
+ * @param {*} id_reunion 
+ */
+async function resInvit(reponse,mail,id_reunion){
+    const client = await pool.connect();
+    client.query("delete from invite where id_reunion=$1 and mail=$2",[id_reunion,mail]);
+    if(reponse){
+        client.query("insert into participe values($1,$2)",[id_reunion,mail,0]); 
+    }
 }
 
 app.get("/", (req, res) => {
@@ -239,12 +263,12 @@ app.post("/inscription",(req,res)=>{
     operations("select * from utilisateur where username='"+req.body.username+"'",req.body.username,req.body.password,req.body.mail,1)
     .then(resultats =>{
     if(resultats==1){
-        res.send(true);
+        res.json({ result: true });
     }else if(resultats == 0){
         let variable = "Erreur nom d'utilisateur deja trouve" ;
-        res.send(variable);
+        res.json({result: variable});
     }else{
-        res.send("erreur ")
+        res.json({result: "erreur "});
     }})
     .catch(erreur =>console.log(erreur.stack));
 });
@@ -253,27 +277,25 @@ app.post("/login",(req,res)=>{
     operations("select * from utilisateur where username='"+req.body.username+"'",req.body.username,req.body.password,req.body.mail,0)
     .then(resultats =>{
     if(resultats==2){
-        res.send("Bien joue tu a reussi");
+        res.json({connecte:true, message: "Bien joue tu a reussi"});
     }else if(resultats == 1|| resultats == 0){
-        res.status(403);
-        let variable = resultats ==1 ? "Erreur mot de passe incorect":"Erreur utilisateur introuvable" ;
-        res.send(variable);
+        res.json({connecte:false, message:variable});
     }})
     .catch(erreur =>console.log(erreur.stack));
 });
 
 app.post("/mdpOublie",(req,res)=>{
     operations("select * from utilisateur where username='"+req.body.username+"'",req.body.username,req.body.username,2)
-    .then(resultats =>{if(resultats==1){
-        mail(process.env.MAIL,resultats.rows[0].mail,"Reinitialisation Mot de passe",
-            "Cliquez sur ce lien pour reinitialisez votre mot de passe : http://localhost:8080/mdp/"+req.body.username);
-        //TODO ENVOYEZ UN MAIL POUR REINIALISEZ LE MDP (en gros un mail avec un lien localhost:8080/username/newMDP)
-        res.send(true);
-    }else if(resultats == 1){
-        res.status(403);
-        let variable = resultats ==1 ? "Erreur mot de passe incorect":"Erreur utilisateur introuvable" ;
-        res.send(variable);
-    }})
+    .then(resultats =>{
+        if(resultats==1){
+            mail(process.env.MAIL,resultats.rows[0].mail,"Reinitialisation Mot de passe",
+                "Cliquez sur ce lien pour reinitialisez votre mot de passe : http://localhost:8080/mdp/"+req.body.username);
+            //TODO ENVOYEZ UN MAIL POUR REINIALISEZ LE MDP (en gros un mail avec un lien localhost:8080/username/newMDP)
+            res.json({result: true});
+        }else if(resultats == 1){
+            let variable = resultats ==1 ? "Erreur mot de passe incorect":"Erreur utilisateur introuvable" ;
+            res.json({result: variable});
+        }})
     .catch(erreur =>console.log(erreur.stack));
 });
 
@@ -287,40 +309,53 @@ app.post('/creation',async (req,res)=>{
         }
         console.log("Les reunion restantes : "+req.body.creneau);
         addReunion(req);
-        res.send(result);
+        res.json({result: result});
     })
-    .catch(err=>{res.send([false]);console.log(err);});
+    .catch(err=>{res.json({result : [false]});console.log(err);});
 });
 
 app.post('/getReunion',(req,res)=>{
-    getReunion(req.body.username)
-    .then(result=>res.send(result))
-    .catch(error =>{console.log("Erreur ..."+error);res.send("Erreur d'username");});
+    getReunion(req.body.mail)
+    .then(result=>res.json({result: result}))
+    .catch(error =>{console.log("Erreur ..."+error);res.json({result:"Erreur d'username"});});
 });
 app.post('/getInfo',(req,res)=>{ //En gros envoyez via res.json toutes les reunion auquels l'utilisateur peut accepter de participer
     getInfoReunion(req.body.id_reunion)
-    .then(result=>res.send(result))
-    .catch(err=>{res.send(err);console.log(err.stack);});
+    .then(result=>res.json({result: result}))
+    .catch(err=>{res.json({result: err});console.log(err.stack);});
 });
 
 app.post('/quittez-reunion',(req,res)=>{
     supParticipation(req.body.username,req.body.id_reunion,req.body.createur);
-    res.send(true);//On envoie pour confirmer ca a bien été enregistré
+    res.json({result: true});//On envoie pour confirmer ca a bien été enregistré
 });
 
 app.post('/invit',(req,res)=>{
-    invitReunion(req.body.username,req.body.inviter,req.body.id,req.body.nom_reunion,true).then(result=>res.send(result)).catch(err=>{console.log("Erreur mail :"+err);res.send(false);})
+    invitReunion(req.body.username,req.body.inviter,req.body.id,req.body.nom_reunion)
+    .then(result=>res.json({result: result}))
+    .catch(err=>{console.log("Erreur mail :"+err);res.json({result: false});})
+});
+
+app.post('/horraireReunion',(req,res)=>{
+    reunion(req.body.id_reunion).then(result=>
+        res.json({heure:result.rows[0].heure,
+            heure_fin:result.rows[0].heure_fin,
+            date:result.rows[0].date}))
+        .catch(err=>{console.log(err);res.json({err:err});});
+});
+
+app.post('resultInvit',(req,res)=>{
+    
 });
 
 app.post('/importReunion',(req,res)=>{
-    console.log("IMPORT REUNION");
     importReunion(req)
-    .then(result=>res.send(true))
-    .catch(error=>{console.log(error.stack);res.send(false);});
+    .then(_result=>res.json({result: true}))
+    .catch(error=>{console.log(error.stack);res.json({result: false});});
 });
 
-app.get('/invit/:index/:username',(req,res)=>{
-    console.log("Bon pour l'instant c'est pas finis par contre...");
+app.get('/invit/:index/:username',(req,res)=>{//L'id de la reunion 
+    res.render("invit",{cons:reunion(req.params.index)});
     res.sendFile(path.join(__dirname,'public/invit.ejs'));
 });
 //recuperez toutes les info des reunion et supprimez les invit quand ils ont clique sur le bouton du fichier invit

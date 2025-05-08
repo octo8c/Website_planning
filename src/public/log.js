@@ -1,3 +1,5 @@
+import { post_JSON } from "./utils.mjs";
+
 $(document).ready(function(){
     /* Variables dépendant du contexte JQuery */
     var tabs = $("#Inscription,#Connexion,#mdpOublie");
@@ -40,8 +42,9 @@ $(document).ready(function(){
     $("#Connexion").on('submit',function(e){
         e.preventDefault();
         if(checkInput(to_check_log)){
-            $.post("http://localhost:8080/login",{username : $("#user_log").val().trim(),password : $("#pass_log").val().trim()},function(res){
-                //TODO faire quelque chose apres que la connection est marche
+            post_JSON("login", {username: $("#user_log").val().trim(), password: $("#pass_log").val().trim()})
+            .then(function (res){
+                // reception de la confirmation / negation de la connexion de l'user TODO
             });
         }
     });
@@ -49,7 +52,9 @@ $(document).ready(function(){
     $("#Inscription").on('submit',function(e){
         e.preventDefault();
         if(checkInput(to_check_sub)){
-            $.post("http://localhost:8080/inscription",{username : $("#user_sub").val().trim(),password : $("#pass_sub").val().trim(),mail : $("#mail_sub").val()},function(res){
+            post_JSON("inscription",{username : $("#user_sub").val().trim(),password : $("#pass_sub").val().trim(),mail : $("#mail_sub").val()})
+            .then(res=>res.json())
+            .then(function(res){
                 //TODO faire quelque chose si la connection a marche
             });
         }
@@ -58,7 +63,9 @@ $(document).ready(function(){
     $("#mdpOublie").on('submit',function(e){
         e.preventDefault();
         if(checkInput(to_check_oub)){
-            $.post("http://localhost:8080/mdpOublie",{username : $("#user_fg").val().trim()},function(res){
+            post_JSON("mdpOublie",{username : $("#user_fg").val().trim()})
+            .then(res=>res.json())
+            .then(function(res){
                 //TODO faire quelque chose si la demande de mdp est passe envoyez un mail
             });
         }

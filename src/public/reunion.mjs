@@ -1,4 +1,4 @@
-import { updateDisplayReunion } from "./utils.mjs";
+import { updateDisplayReunion, post_JSON } from "./utils.mjs";
 
 $(document).ready(function () {
 
@@ -27,6 +27,7 @@ $(document).ready(function () {
         $(".date_heure").not("#original_creneau").prop("outerHTML", "")
         nbr_creneau = 1;
         $(".InfoReunion input[type='date']").val("");
+        $(".InfoReunion").find("*").removeAttr("traiter");
         synchro_date(date);
         $(".InfoReunion").css("visibility", "hidden");
     }); 
@@ -58,26 +59,30 @@ $(document).ready(function () {
             heure_reunion.push(unite_temp);            
         });
 
-        console.log(heure_reunion);
 
         if($("input#reunion_name").val().trim()===""){
             $("input#reunion_name").css("border","1px solid red");
             errorMessage(".InfoReunion","Erreur,veuillez donnez un nom a la reunion");
         }else if(verif_validité_heure(heure_reunion)){
-            $.post("http://localhost:8080/creation",
-                {
+            post_JSON("creation", {
                     nom_reunion : $("#reunion_name").val().trim(),
                     username : "test" ,/*Jsp encore comment on vas recupere le nom de l'utilisateur qui c'est connecte encore*/
+                    mail : "webprojetprogramation@gmail.com",
+                    participe : $("#participe").checked ,
                     creneau : heure_reunion
-                },function(result){
-                    for(let i=0;i<result.length;i++){
-                        if(!result[i]){//Message d'erreur 
-                           errorMessage(".InfoReunion",
-                            "Erreur vous aurez une autre reunion en cours au creneau "+i+heure_reunion[i].d+","
-                            +heure_reunion[i][0].h+":"+heure_reunion[i][0].m+"->"
-                            +heure_reunion[i][1].h+":"+heure_reunion[i][1].m);
-                        }
+            })
+            .then(result => result.json())
+            .then(function(result){
+                console.log(result);
+                let resu = result.result;
+                for(let i=0;i<resu.length;i++){
+                    if(!resu[i]){//Message d'erreur 
+                        errorMessage(".InfoReunion",
+                        "Erreur vous aurez une autre reunion en cours au creneau "+i+heure_reunion[i].d+","
+                        +heure_reunion[i][0].h+":"+heure_reunion[i][0].m+"->"
+                        +heure_reunion[i][1].h+":"+heure_reunion[i][1].m);
                     }
+                }
                 updateDisplayReunion('test');//TODO METTRE LE NOM DE L'UTILISATEUR A LA PLACE
                 $("#closeReuButton").click();
             });
@@ -85,6 +90,7 @@ $(document).ready(function () {
             errorMessage(".InfoReunion","Mettez une heure de debut inférieur a l'heure de fin");
         }
     });
+
 
     /**
      * 
@@ -106,6 +112,7 @@ $(document).ready(function () {
         nbr_creneau++;
         let new_creneau = $("#original_creneau").clone();
         new_creneau.removeAttr("id");
+        new_creneau.find("*").removeAttr("traiter");
         new_creneau.find(".remove_creneau").css("display", "block");
         new_creneau.find(".number_creneau").html("Créneau "+nbr_creneau+" :");
         $("#container_date_heure").append(new_creneau.prop("outerHTML"));
@@ -114,11 +121,25 @@ $(document).ready(function () {
 
     function synchro_date(date_actuelle){
         $(".InfoReunion input[type='date']").each(function (){
-            if ($(this).val() == "") $(this).val(date_actuelle.getFullYear()+"-"+add_zero(date_actuelle.getMonth())+"-"+add_zero(date_actuelle.getDate()));
+            if ($(this).attr("traiter") != "true"){
+                $(this).val(date_actuelle.getFullYear()+"-"+add_zero(date_actuelle.getMonth())+"-"+add_zero(date_actuelle.getDate()));
+                $(this).attr("traiter", "true");
+            }
             else console.log($(this).val());
         });
-        $(".selectionTime select.heure-reu").val(add_zero(date_actuelle.getHours()));
-        $(".selectionTime select.minute-reu").val(add_zero(date_actuelle.getMinutes() + (5 - (date_actuelle.getMinutes() % 5)))); 
+
+        $(".selectionTime select.minute-reu").each(function (){
+            if ($(this).attr("traiter") != "true"){
+                $(this).val(add_zero(date_actuelle.getMinutes() + (5 - (date_actuelle.getMinutes() % 5)))); 
+                $(this).attr("traiter", "true");
+            }
+        });
+        $(".selectionTime select.heure-reu").each(function (){
+            if ($(this).attr("traiter") != "true"){
+                $(this).val(add_zero(date_actuelle.getHours()));
+                $(this).attr("traiter", "true");
+            }
+        });
     }
 
     $("#container_date_heure").on("click", ".remove_creneau" ,function (){
@@ -134,4 +155,5 @@ $(document).ready(function () {
             temp++;
         });
     }
+    
 });
