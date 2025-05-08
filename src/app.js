@@ -34,35 +34,39 @@ const pool = new pg.Pool({
  * @param {*} username le nom de l'tutlisateur
  * @param {*} motdepasse le mots de passe de l'utilisateur
  * @param {*} mode Le mode de connexion 0 pour la connexion , 1 inscription , 2 mdp oublie
- * @returns Renvoie si la connexion c'est bien passe
+ * @returns Renvoie un entier > 0 si la connexion c'est bien passe
  */
-async function operations(requete,username,motdepasse,mail,mode) {
+async function operations(username,motdepasse,mail,mode) {
     const client = await pool.connect();
-    let res = await client.query (requete);
+    let res = await client.query ("select * from utilisateur where username='"+username+"'");
     let flag = false;
     for(row of res.rows){
         if(row.mot_de_passe===motdepasse&&mode==0){//Le client est valide
             client.release();
-            return 2;
+            return row.id;
         }else if (mode===1){
             client.release();
-            return 0;//Deja un utilisateur avec le meme pseudo
+            return -1;//Deja un utilisateur avec le meme pseudo
         }else if(mode===2){
             res = await client.query("update utilisateur set mot_de_passe = "+motdepasse+"where username="+username);
             client.release();
-            return 2;
+            return row;
         }
         flag = true;
     }
     if(mode===1){//Tentaive d'inscription et aucun utilisateur qui a le meme pseudo 
         await client.query("Insert into utilisateur values ($1,$2,$3)",[username,mail,motdepasse]);
-        let res = client.query("select * from utilisateur");
+        let res = await client.query("select id from utilisateur where username=$1 and mot_de_passe=$2", [username, motdepasse]);
+        if (res.length == 0){
+            console.log("impossible d'ajouter l'utilisateur dans la base de donnée");
+            return -2;
+        }
         client.release();
-        return 1;//L'utilisateur est bien ajouté
+        return res[0];//L'utilisateur est bien ajouté
     }
     client.release();
-    if(flag) return 1;//Pas le bon mdp
-    else return 0;//Pas ton nom d'utilisateur
+    if(flag) return -2;//Pas le bon mdp
+    else return -1;//Pas ton nom d'utilisateur
 }
 /**
  * Creer la reunion et ajoute le createur a la table des participants
@@ -224,42 +228,46 @@ app.get("/", (req, res) => {
 });
 
 app.post("/inscription",(req,res)=>{
-    operations("select * from utilisateur where username='"+req.body.username+"'",req.body.username,req.body.password,req.body.mail,1)
+    operations(req.body.username,req.body.password,req.body.mail,1)
     .then(resultats =>{
-    if(resultats==1){
-        res.json({ result: true });
-    }else if(resultats == 0){
-        let variable = "Erreur nom d'utilisateur deja trouve" ;
-        res.json({result: variable});
-    }else{
-        res.json({result: "erreur "});
-    }})
+        if(resultats>0){
+            res.json({ result: true, id: resultats });
+        }else if(resultats == -1){
+            res.json({result: false, message: "Erreur nom d'utilisateur deja utilisé", id: -1});
+        }else{
+            res.json({result: false, message: "erreur ", id: -1});
+        }})
     .catch(erreur =>console.log(erreur.stack));
 });
 
 app.post("/login",(req,res)=>{
-    operations("select * from utilisateur where username='"+req.body.username+"'",req.body.username,req.body.password,req.body.mail,0)
+    operations(req.body.username,req.body.password,req.body.mail,0)
     .then(resultats =>{
-    if(resultats==2){
-        res.json({connecte:true, message: "Bien joue tu a reussi"});
-    }else if(resultats == 1|| resultats == 0){
-        res.json({connecte:false, message:variable});
-    }})
+        if(resultats>0){
+            res.json({connecte:true, message:"connecté!", id:resultats});
+        }else if(resultats == -1){
+            res.json({connecte:false, message:"nom d'utilisateur inconnu!", id:-1});
+        }else if(resultats == -2){
+            res.json({connecte:false, message:"mot de passe incorrect", id: -1});
+        } else {
+            res.json({connecte:false, message:"erreur inconnue", id:-1});
+        }
+    })
     .catch(erreur =>console.log(erreur.stack));
 });
 
 app.post("/mdpOublie",(req,res)=>{
-    operations("select * from utilisateur where username='"+req.body.username+"'",req.body.username,req.body.username,2)
+    operations(req.body.username,req.body.username,2)
     .then(resultats =>{
-        if(resultats==1){
-            mail(process.env.MAIL,resultats.rows[0].mail,"Reinitialisation Mot de passe",
+        if (resultats < 0) {
+            res.json({result: false, message: "Erreur: utilisateur introuvable!"});
+        }else{
+            mail(process.env.MAIL,resultats.mail,"Reinitialisation Mot de passe",
                 "Cliquez sur ce lien pour reinitialisez votre mot de passe : http://localhost:8080/mdp/"+req.body.username);
             //TODO ENVOYEZ UN MAIL POUR REINIALISEZ LE MDP (en gros un mail avec un lien localhost:8080/username/newMDP)
             res.json({result: true});
-        }else if(resultats == 1){
-            let variable = resultats ==1 ? "Erreur mot de passe incorect":"Erreur utilisateur introuvable" ;
-            res.json({result: variable});
-        }})
+        }
+    })
     .catch(erreur =>console.log(erreur.stack));
 });
 

@@ -157,12 +157,20 @@ ul.row {
     background-color: #5dade2;
 }
 
+#profilDiv{
+    display: none;
+}
+
+#disconnectButton{
+    display: none;
+}
 
 /* ------------ règle temporaire ------------ */
 #voirReunionDiv {
     border : 2px solid #ccc;
     border-radius: 6px;
 }
+
 
 
 

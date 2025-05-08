@@ -1,21 +1,11 @@
-import { updateDisplayReunion, post_JSON } from "./utils.mjs";
+import { updateDisplayReunion, post_JSON, errorMessage, getCookie } from "./utils.mjs";
 
 $(document).ready(function () {
 
-    let id_error = 0;
     let date=new Date();
     let nbr_creneau = 1;
 
-    function errorMessage(zone,text){
-        $(zone).append("<p style=color:red id=errorMessage"+id_error+">"+text+"</p>");
-        let erreur = id_error;
-        id_error++;
-        setTimeout(()=>{
-            $("#errorMessage"+erreur).fadeOut(1000,function(){
-                $(this).remove();
-            });
-        },3000);
-    }
+    
 
     $("#Create_reunion").on('click',function(){
         $(".InfoReunion").css("visibility", "visible");
@@ -66,7 +56,7 @@ $(document).ready(function () {
         }else if(verif_validité_heure(heure_reunion)){
             post_JSON("creation", {
                     nom_reunion : $("#reunion_name").val().trim(),
-                    username : "test" ,/*Jsp encore comment on vas recupere le nom de l'utilisateur qui c'est connecte encore*/
+                    username : getCookie("username"),/*Jsp encore comment on vas recupere le nom de l'utilisateur qui c'est connecte encore*/
                     creneau : heure_reunion
             })
             .then(result => result.json())
@@ -81,7 +71,7 @@ $(document).ready(function () {
                         +heure_reunion[i][1].h+":"+heure_reunion[i][1].m);
                     }
                 }
-                updateDisplayReunion('test');//TODO METTRE LE NOM DE L'UTILISATEUR A LA PLACE
+                updateDisplayReunion(getCookie("username"));//TODO METTRE LE NOM DE L'UTILISATEUR A LA PLACE
                 $("#closeReuButton").click();
             });
         }else{

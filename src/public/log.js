@@ -1,4 +1,4 @@
-import { post_JSON } from "./utils.mjs";
+import { post_JSON, getCookie, setCookie, errorMessage, updateUser } from "./utils.mjs";
 
 $(document).ready(function(){
     /* Variables dépendant du contexte JQuery */
@@ -39,33 +39,57 @@ $(document).ready(function(){
     $(".tabcontent").hide(); // pour qu'au début de la page on ait rien visuellement
     $(".tabcontent").css("visibility", "visible"); // on redonne la main au jquery pour cacher les éléments, permet d'eviter un effet "fantome" lorsqu'on recharche la page
 
-    $("#Connexion").on('submit',function(e){
+    $("#Connexion .log_button").on('click',function(e){
         e.preventDefault();
         if(checkInput(to_check_log)){
             post_JSON("login", {username: $("#user_log").val().trim(), password: $("#pass_log").val().trim()})
+            .then(res=>res.json())
             .then(function (res){
-                // reception de la confirmation / negation de la connexion de l'user TODO
+                if (res.connecte){
+                    setCookie("id", res.id);
+                    setCookie("username", $("#user_log").val().trim());
+                    $("#closeLoginButton").click();
+                    alert("vous etes connecté!");
+                    updateUser();
+                    // TODO : updateUser() permettant d'update le fait que l'utilisateur se connecte / deconnecte
+                } else {
+                    errorMessage("#Connexion", res.message);
+                }
             });
         }
     });
 
-    $("#Inscription").on('submit',function(e){
+    $("#Inscription .log_button").on('click',function(e){
         e.preventDefault();
         if(checkInput(to_check_sub)){
             post_JSON("inscription",{username : $("#user_sub").val().trim(),password : $("#pass_sub").val().trim(),mail : $("#mail_sub").val()})
             .then(res=>res.json())
             .then(function(res){
+                if (res.result){
+                    setCookie("id", res.id);
+                    setCookie("username", $("#user_sub").val().trim());
+                    alert("vous êtes correctement inscrit !");
+                    $("#closeLoginButton").click();
+                } else {
+                    errorMessage("#Inscription", res.message);
+                }
                 //TODO faire quelque chose si la connection a marche
             });
         }
     });
 
-    $("#mdpOublie").on('submit',function(e){
+    $("#mdpOublie .log_button").on('click',function(e){
         e.preventDefault();
         if(checkInput(to_check_oub)){
             post_JSON("mdpOublie",{username : $("#user_fg").val().trim()})
             .then(res=>res.json())
             .then(function(res){
+                if (res.result){
+                    $("#closeLoginButton").click();
+                    alert("un mail à correctement été envoyé à votre adresse mail pour réinitialiser votre mot de passe");
+                } else {
+                    errorMessage("#mdpOublie", res.message);
+                }
                 //TODO faire quelque chose si la demande de mdp est passe envoyez un mail
             });
         }
@@ -86,7 +110,6 @@ $(document).ready(function(){
         e.preventDefault();
         switchTabs('mdpOublie');
      });
-    $("div#Connexion").css('display','block');
     
     $("#loginButton").on('click', function (){
         $("#popupLogin").css("visibility", "visible");

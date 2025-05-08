@@ -2,9 +2,10 @@ drop table if exists utilisateur cascade;
 drop table if exists reunion cascade;
 drop table if exists participe cascade;
 create table utilisateur (
-    username varchar(25) primary key,
+    username varchar(25) unique,
     adresse_mail varchar(100) not null ,
-    mot_de_passe varchar(255)
+    mot_de_passe varchar(255), 
+    id SERIAL primary key
 );
 
 create table reunion (
