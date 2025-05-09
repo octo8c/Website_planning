@@ -27,7 +27,7 @@ export function updateDisplayReunion(username){
                 }    
             }else{/*Toutes les reunions qui n'ont pas d'horraires definis */
                 console.log("Ajiut dans le flex");
-                $("#Reunion_flex").append("<a href =\"\"id="+row.id_reunion+" >Reunion de +"+row.creator_username+"</a><br>");
+                $("#Reunion_flex").append("<>a href =\"\"id="+row.id_reunion+" >Reunion de +"+row.creator_username+"</a><br>");
                 $("a#"+row.id_reunion).on('click',function(e){e.preventDefault();viewReunion(username,row);});
             }
         }
@@ -98,6 +98,10 @@ export function viewReunion(username,row){
 
 export function post_JSON(url, json_to_send){
     return $.post("http://localhost:8080/"+url, json_to_send);
+}
+
+export function get_JSON(url){
+    return $.get("http://localhost:8080/"+url);   
 }
 
 export function setCookie(name, value){

@@ -85,3 +85,33 @@ body {font-family: Verdana, sans-serif;}
 @media screen and (max-width: 290px) {
   .weekdays li, .days li {width: 12.2%;}
 }
+
+@media (min-height: 575px){
+  .agenda-case {
+    height: 5dvh !important;
+  }
+}
+
+@media (min-height: 475px){
+  .agenda-case {
+    height: 9dvh !important;
+  }
+}
+
+@media (min-height: 576px){
+  .agenda-case {
+    height:11dvh !important;
+  } 
+}
+
+@media (min-height: 750px){
+  .agenda-case{
+    height: 13dvh !important;
+  }
+}
+
+@media (min-width: 350px) {
+  .jour-agenda {
+    font-size: medium;
+  }
+}
