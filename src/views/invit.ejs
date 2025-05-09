@@ -2,13 +2,14 @@
 <html>
     <head>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-        <script src="invit.js"></script>
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+        <script src="../public/invitation.js"></script>
     </head>
     <body>
         <h2><%= cons.nom_reunion %></h2>
         <p>Reunion de <%= cons.creator_username%></p>
         <div id="horraires">
-
         </div>
         <p><%= cons.descr %></p>
         <p>Acceptez vous de rejoindre la reunion ? </p>
@@ -16,7 +17,7 @@
             Oui
             <input type="checkbox" id="yes" value="false">
         </label>
-        <label for="non">
+        <label for="no">
             Non
             <input type="checkbox" id="no">
         </label>

@@ -6,7 +6,7 @@ const port = 8080;
 require('dotenv').config();
 
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname,'public')));
 app.use(express.static('image'));   
 app.use(express.json());
 app.set("view engine","ejs");
@@ -282,7 +282,6 @@ async function checkInvit(id_reunion,mail){
     const client = await pool.connect();
     console.log("L'id reunion"+id_reunion+"Le mail : "+mail);
     let res = await client.query("select * from invite where id_reunion=$1 and mail=$2",[id_reunion,mail]);
-    console.log(res.rows[0]===undefined);
     client.release();
     return res.rows[0]!==undefined;
 }
@@ -384,6 +383,7 @@ app.post('/horraireReunion',(req,res)=>{
 
 app.post('/resultInvit',(req,res)=>{
     //TODO ajoutez le choix d'horraires 
+    console.log("Oui j'ai bien recu une demande");
     resInvit(req.body.reponse,req.body.mail,req.body.id_reunion)
     .then(result=>res.json({ok:true}))
     .catch(err=>{console.log(err);res.json({ok:false})});
@@ -405,16 +405,16 @@ app.post('/importReunion',(req,res)=>{
 });
 
 app.get('/invit/:index/:mail',(req,res)=>{//L'id de la reunion 
-    checkInvit(req.params.index,req.params.mail).then(result=>{
-        if (result){
-            res.render("invit",{cons:reunion(req.params.index)});
-            res.sendFile(path.join(__dirname,'/views/invit.ejs'));
-        }else{
-            res.render("erreur",{nom:req.params.mail});
-            res.sendFile(path.join(__dirname,'/views/erreur.ejs'));
-        }
-    });
-});
+    console.log("On rentre dans l'invit");
+        checkInvit(req.params.index,req.params.mail).then(result=>{
+            if (result){
+                res.render("invit",{cons:reunion(req.params.index)});
+            }else{
+                res.render("erreur",{nom:req.params.mail});
+            }
+        });
+    }
+);
 /**
  * Mets a jour le vote pour les horraires
  */
