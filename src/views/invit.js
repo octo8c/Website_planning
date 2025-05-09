@@ -18,5 +18,11 @@ $(document).ready(function(){
         .then(result=>{
             console.log(result);
         }
-    );
+    ).then(result=>{
+        console.log(result);
+        if(result){
+            $("body").empty();
+            $("body").append("<h1>Vous etes instrict dans les participants</h1>");
+        }
+    });
 });
