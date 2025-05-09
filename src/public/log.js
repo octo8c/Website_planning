@@ -43,7 +43,6 @@ $(document).ready(function(){
         e.preventDefault();
         if(checkInput(to_check_log)){
             post_JSON("login", {username: $("#user_log").val().trim(), password: $("#pass_log").val().trim()})
-            .then(res=>res.json())
             .then(function (res){
                 if (res.connecte){
                     setCookie("id", res.id);
@@ -63,7 +62,6 @@ $(document).ready(function(){
         e.preventDefault();
         if(checkInput(to_check_sub)){
             post_JSON("inscription",{username : $("#user_sub").val().trim(),password : $("#pass_sub").val().trim(),mail : $("#mail_sub").val()})
-            .then(res=>res.json())
             .then(function(res){
                 if (res.result){
                     setCookie("id", res.id);
@@ -82,7 +80,6 @@ $(document).ready(function(){
         e.preventDefault();
         if(checkInput(to_check_oub)){
             post_JSON("mdpOublie",{username : $("#user_fg").val().trim()})
-            .then(res=>res.json())
             .then(function(res){
                 if (res.result){
                     $("#closeLoginButton").click();

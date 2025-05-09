@@ -3,7 +3,6 @@
      */
 export function updateDisplayReunion(username){
     post_JSON("getReunion", {username:username})
-    .then(result => result.json())
     .then(function(res){
         let rows = res.result.rows;
         $("#Reunion_fix").empty();
@@ -54,7 +53,6 @@ export function viewReunion(username,row){
     let createur = "";
 
     post_JSON("getInfo", {id_reunion:row.id_reunion})
-    .then(resultat => resultat.json())
     .then(function(resultats){
         let participants = "";
         $("#display-info").append("<h3><b>"+row.nom_reunion+"</b></h3>");
@@ -89,7 +87,6 @@ export function viewReunion(username,row){
     
         $("#conf-quittez").on('click',function(){
             post_JSON("quittez-reunion", {username:username, id_reunion:row.id_reunion, createur:createur})
-            .then(resultat => resultat.json())
             .then(function(res){      
                 $("#modal-conf").css("display","none");
                 $("#popup-overlay").css("display","none");
@@ -99,14 +96,8 @@ export function viewReunion(username,row){
     });
 }
 
-export async function post_JSON(url, json_to_send){
-    return fetch("http://localhost:8080/"+url, {
-        method:"POST",
-        headers:{
-            "Content-Type" : "application/json"
-        },
-        body: JSON.stringify(json_to_send)
-    })
+export function post_JSON(url, json_to_send){
+    return $.post("http://localhost:8080/"+url, json_to_send);
 }
 
 export function setCookie(name, value){

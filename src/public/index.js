@@ -89,7 +89,6 @@ $(document).ready(function(){
                             organisateur : tab[6] ,
                             invites : attendees
                         })
-                        .then(result => result.json())
                         .then(function(res){
                             if(!res.result){
                                 errorMessage("#InfoReunion","Erreur fichier au mauvais format");

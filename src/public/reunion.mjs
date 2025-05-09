@@ -59,7 +59,6 @@ $(document).ready(function () {
                     username : getCookie("username"),/*Jsp encore comment on vas recupere le nom de l'utilisateur qui c'est connecte encore*/
                     creneau : heure_reunion
             })
-            .then(result => result.json())
             .then(function(result){
                 console.log(result);
                 let resu = result.result;
