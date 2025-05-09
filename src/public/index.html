@@ -14,8 +14,7 @@
     <title> First Agenda </title>
     <link rel="icon" href="mp_icon.png" type="image/png">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>    
     <script src="index.js" type="module"></script>
     <script src="log.js" type="module"></script>
     <script src="calendar.js" type="module"></script>
@@ -132,6 +131,7 @@
         <img id="closeReuButton" src="closebutton.png" height="50px" width="50px" style="cursor:pointer">
 
         <input placeholder="Nom de la réunion" id="reunion_name" type="input">
+        <label for="participe"><input type="checkbox" id="participe">Voulez vous participez ?</label>
         <div id="container_date_heure">
             <div class="date_heure" id="original_creneau">
                 <p class="number_creneau"> Créneau 1 :</p>
@@ -171,11 +171,14 @@
             </ul>
             <ul class="row" id="numero-jour" onmousedown="return false"></ul> <!-- est rempli par le js-->
         </div>
+    <!-- Pop up affichage reunion-->
         <div id="voirReunionDiv" class="col-md-3">
             <p>Reunion déja prévu : </p>
             <div id="Reunion_fix"></div>
             <p>Reunion sans horraires : </p>
             <div id="Reunion_flex"></div>
+            <p>Reunion ou vous etes invites</p>
+            <div id="Reunion_invit"></div>
         </div>
     </div>
     <div id="popup-overlay" class="popup-overlay"></div>

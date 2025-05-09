@@ -74,6 +74,10 @@ button:hover {
     display: none;
 }
 
+#Create_reunion{
+    visibility:hidden;
+}
+
 
 /* ------------ règle de l'agenda ------------ */
 

@@ -5,8 +5,6 @@ $(document).ready(function () {
     let date=new Date();
     let nbr_creneau = 1;
 
-    
-
     $("#Create_reunion").on('click',function(){
         $(".InfoReunion").css("visibility", "visible");
     });
@@ -54,9 +52,12 @@ $(document).ready(function () {
             $("input#reunion_name").css("border","1px solid red");
             errorMessage(".InfoReunion","Erreur,veuillez donnez un nom a la reunion");
         }else if(verif_validité_heure(heure_reunion)){
+            console.log("PARTICIPATION"+$("#participe").is(':checked'));
             post_JSON("creation", {
                     nom_reunion : $("#reunion_name").val().trim(),
-                    username : getCookie("username"),/*Jsp encore comment on vas recupere le nom de l'utilisateur qui c'est connecte encore*/
+                    username : getCookie("username") ,/*Jsp encore comment on vas recupere le nom de l'utilisateur qui c'est connecte encore*/
+                    mail : getCookie("mail"),
+                    participe : $("#participe").is(':checked') ,
                     creneau : heure_reunion
             })
             .then(function(result){
@@ -70,7 +71,7 @@ $(document).ready(function () {
                         +heure_reunion[i][1].h+":"+heure_reunion[i][1].m);
                     }
                 }
-                updateDisplayReunion(getCookie("username"));//TODO METTRE LE NOM DE L'UTILISATEUR A LA PLACE
+                updateDisplayReunion(getCookie("mail"));
                 $("#closeReuButton").click();
             });
         }else{
