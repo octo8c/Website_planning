@@ -60,7 +60,6 @@ $(document).ready(function () {
                     participe : $("#participe").is(':checked') ,
                     creneau : heure_reunion
             })
-            .then(result => result.json())
             .then(function(result){
                 console.log(result);
                 let resu = result.result;
