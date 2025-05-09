@@ -1,18 +1,22 @@
 /**
      * Prends l'username de l'utilisateur et affiche toutes les reunion auquel il vas avoir lieu dans les prochains jours (tries par ordre d'heure)
      */
-export function updateDisplayReunion(username){
-    post_JSON("getReunion", {username:username})
+export function updateDisplayReunion(mail){
+    post_JSON("getReunion", {mail:mail})
     .then(function(res){
+        console.log("COOHADIADNADID");
         let rows = res.result.rows;
+        let rows_invit = res.result_invit.rows;
+        console.log(rows);
+        console.log(rows_invit);
         $("#Reunion_fix").empty();
         $("#Reunion_flex").empty();
+        $("#Reunion_invit").empty();
         var date = new Date();
         var list_date = [];//Liste de liste (chaque liste contient toutes les info de la reunion)
-        /*Ajoute les dates dans le cadre a droite */
         let ind = 0;
         for(let row of rows){
-            console.log("La taille du plateau : "+row.heure_fin.length);
+            console.log("oui on traite des requete");
             if(row.heure_fin.length===1){
                 let tabFin = row.heure_fin[0].split(":");
                 let tempsMax = parseInt(tabFin[0]) * 60 + parseInt(tabFin[1]);
@@ -26,9 +30,8 @@ export function updateDisplayReunion(username){
                     ind++;
                 }    
             }else{/*Toutes les reunions qui n'ont pas d'horraires definis */
-                console.log("Ajiut dans le flex");
                 $("#Reunion_flex").append("<a href =\"\"id="+row.id_reunion+" >Reunion de +"+row.creator_username+"</a><br>");
-                $("a#"+row.id_reunion).on('click',function(e){e.preventDefault();viewReunion(username,row);});
+                $("a#"+row.id_reunion).on('click',function(e){e.preventDefault();viewReunion(getCookie("mail"),row);});
             }
         }
         /**On trie toutes les dates */
@@ -41,15 +44,42 @@ export function updateDisplayReunion(username){
         });
         //On les ajoutes alors au reunion prévus
         for(let i = 0;i<list_date.length;i++){
+            console.log("Traitement des reunions recupere : "+i);
             $("#Reunion_fix").append("<a href =\"\"id="+rows[list_date[i][0]].id_reunion+" >Reunion a "+rows[list_date[i][0]].heure[0].substring(0,5)+" , le "+rows[list_date[i][0]].date_reunion[0].substring(0,10)+".Createur : "+rows[list_date[i][0]].creator_username+"</a><br>");
-            $("a#"+rows[list_date[i][0]].id_reunion).on('click',function(e){e.preventDefault();viewReunion(username,rows[list_date[i][0]]);});
+            $("a#"+rows[list_date[i][0]].id_reunion).on('click',function(e){e.preventDefault();viewReunion(getCookie("mail"),rows[list_date[i][0]]);});
+        }
+
+        for(let row of rows_invit){
+            $("#Reunion_invit").append("<a href =\"\"id="+row.id_reunion+" >Reunion de +"+row.creator_username+"</a><br>");
+            $("a#"+rows[list_date[i][0]].id_reunion).on('click',function(e){e.preventDefault();viewInvit(getCookie("mail"),row)});
         }
 
     });
 }
+export function viewInvit(mail,row){
+    $("#display-info").append("<h3><b>"+row.nom_reunion+"</b></h3>");
+    let createur = "";
+    for (let participant of resultats.result.rows){
+        if(participant.role_reunion===2){
+            createur = participant.mail;
+        }
+    }
+    $("#display-info").append("<h3>L'organisateur : "+createur+"<h3>");
+    if(row.date_reunion.length === 1){
+        $("#display-info").append("<p>"+row.date_reunion[0] +"</p><br>");
+        $("#display-info").append("<p>Reunion de "+row.heure[0]+" : "+row.heure_fin[0]+" </p>");
+    }else{
+        $("#display-info").append("<p>Horraires possibles : </p>");
+        for(let i =0;i<row.date_reunion.length;i++){
+            $("#display-info").append("<button id=invit_"+i+">Le"+row.date_reunion[i]+","+row.heure[i]+"->"+row.heure_fin[i]+"</button>");
+            $("#invit_"+i).on('click',function(){
+                post_JSON('updateProposition',{id_reunion:row.id_reunion,date:row.date_reunion[i],heure:row.heure[i],heure_fin:row.heure_fin[i]});
+            });
+        }
+    }
+}
 
-
-export function viewReunion(username,row){
+export function viewReunion(mail,row){
     let createur = "";
 
     post_JSON("getInfo", {id_reunion:row.id_reunion})
@@ -66,32 +96,52 @@ export function viewReunion(username,row){
             }
         }
         for (let participant of resultats.result.rows){
-            participants = participants + ", " + participant.username;
+            participants = participants + ", " + participant.mail;
             if(participant.role_reunion===2){
-                createur = participant.username;
+                createur = participant.mail;
             }
         }
         participants = participants.substring(1);
-        participants = participants+".";
         $("#display-info").append("<p><b>Le créateur de la reunion : "+createur+"</b></p>");
         $("#display-info").append("<p> Les participants :"+participants+"</p>");
 
         $("#popup-overlay").css("display","inline");//On affiche les display
         $("#modal").css("display","inline");
     
-        $("#modalButton").on('click',function(){
+        $("#modalButton").on('click',function(){//Quitte l'affichage sans rien faire
             $("#display-info").empty();
             $("#popup-overlay").css("display","none");
             $("#modal").css("display","none");
+            $("#userType").css("display","inline");
+
+        });
+        let flag = false;
+        $("#ajouterUtilisateur").on('click',function(){ //Invite les utilisateurs a la reunion
+            if(!flag){
+                $("#userType").css("display","inline");
+                flag = true;
+            }else{
+                post_JSON("invit",{username:$("#mail_username").val(),id_reunion:row.id_reunion,nom_reunion:row.nom_reunion})
+                .then(res=>{
+                    if(!res.result){
+                        errorMessage("display-info","Erreur mail pas envoyez");
+                    }else{//On update la liste des participants
+                        viewReunion(mail,row);
+                    }
+                })
+                $("#mail_username").val("");//On vide la valeur
+            }
         });
     
         $("#conf-quittez").on('click',function(){
-            post_JSON("quittez-reunion", {username:username, id_reunion:row.id_reunion, createur:createur})
+            post_JSON("quittez-reunion", {mail:mail, id_reunion:row.id_reunion, createur:createur})
             .then(function(res){      
                 $("#modal-conf").css("display","none");
                 $("#popup-overlay").css("display","none");
+                $("#userType").css("display","inline");
+
             });
-            updateDisplayReunion(username);
+            updateDisplayReunion(getCookie("mail"));
         });
     });
 }
@@ -136,13 +186,15 @@ export function errorMessage(zone,text){
 
 
 export function updateUser(){
-    updateDisplayReunion(getCookie("username"));
+    updateDisplayReunion(getCookie("mail"));
     if (getCookie("id") != undefined){ // si l'user est connecté
         $("#loginButton").css("display", "none");
         $("#disconnectButton").css("display", "block");
+        $("#Create_reunion").css("visibilty","visible");
         // TODO : mettre bouton de déconnexion
     } else {
         $("#disconnectButton").css("display", "none");
         $("#loginButton").css("display", "block");
+        $("#Create_reunion").css("visibility","hidden");
     }
 }
