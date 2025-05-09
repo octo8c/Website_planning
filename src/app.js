@@ -49,7 +49,7 @@ async function operations(username,motdepasse,mail,mode) {
             client.release();
             return -1;//Deja un utilisateur avec le meme pseudo
         }else if(mode===2){
-            res = await client.query("update utilisateur set mot_de_passe = "+motdepasse+"where username="+username);
+            res = await client.query("update utilisateur set mot_de_passe = $1 where username=$2",[motdepasse,username]);
             client.release();
             return row;
         }
@@ -93,6 +93,7 @@ async function addReunion(req){
     console.log(tab);
     await client.query("insert into reunion (heure,nom_reunion, creator_username, date_reunion,heure_fin) values ($1,$2,$3,$4,$5)",tab);
     let id = await client.query(requete,[tab_heure,reunion_nom,username,date]);//Pas 2 reunion qui peuvent commencer au meme horraire
+    console.log("Participe : "+req.body.participe);
     if(req.body.participe){
         await client.query("insert into participe values ($1,$2,$3)",[id.rows[0].id_reunion,req.body.mail,2]);
     }
@@ -109,7 +110,7 @@ async function getReunion(mail){
     let requete = "select reunion.* from reunion join participe on participe.id_reunion = reunion.id_reunion"
     +" where participe.mail=$1";
     let res = await client.query(requete,[mail]);
-    let res_invit = await client.query("select reunion.* from reunion join invite on invite.id_reunion=reunion.id_reunion join utilisateur on utilisateur.mail =invite.mail where utilisateur.id=$1");
+    let res_invit = await client.query("select reunion.* from reunion join invite on invite.id_reunion=reunion.id_reunion where invite.mail=$1",[mail]);
     client.release();
     return [res,res_invit];
 }
@@ -150,12 +151,13 @@ async function checkReunion(mail,creneau_list){
     return list_result;
 }
 
-async function supParticipation(username,id_reunion,createur){
+async function supParticipation(mail,id_reunion,createur){
     const client = await pool.connect();
-    if(createur === username){//IL faut supprimer la reunion directement
+    let res = await client.query("select role_reunion from participe where mail=$1",[mail]);
+    if(res.rows[0]!==undefined && res.rows[0].role_reunion === 2){//IL faut supprimer la reunion directement
         client.query("delete from reunion where id_reunion=$1",[id_reunion]);
     }else{
-        client.query("delete from participe where id_reunion=$1 and username =$2",[id_reunion,username]);
+        client.query("delete from participe where id_reunion=$1 and mail =$2",[id_reunion,mail]);
     }
     client.release();
 }
@@ -168,45 +170,46 @@ async function getInfoUser(id){
     const client = await pool.connect();
     let res= await client.query("select * from utilisateur where id=$1",[id]);
     client.release();
-    return res;
+    return res.rows[0];
 }
 
 async function getInfoReunion(id_reunion){
     const client = await pool.connect();
-    let res = await client.query("select role_reunion,username from participe where id_reunion=$1",[id_reunion]);
+    let res = await client.query("select role_reunion,mail from participe where id_reunion=$1",[id_reunion]);
     client.release();
     return res;
 }
 
-async function invitReunion(username,inviter,id,nom_reunion,remove) {
+async function invitReunion(username,id,nom_reunion,remove) {
     const client = await pool.connect();
-    let mail = "";
-    let flag = false;
+    let adresse_mail = "";
     if(!username.includes("@")){
         let res = await client.query("select mail from utilisateur where username=$1",username);
         if(res.rows!==undefined){
-            mail = res.rows[0].mail;
+            adresse_mail = res.rows[0].mail;
         }else{
             return false;
         }
     }else{
-        mail = username;
+        adresse_mail = username;
     }
-    if(remove){await client.query("delete from invite where mail=$1",[mail]);}
-    else{await client.query("insert into invite values($1,$2)",[id,mail]);}
+    if(remove){await client.query("delete from invite where mail=$1",[adresse_mail]);}
+    else{await client.query("insert into invite values($1,$2)",[id,adresse_mail]);}
     client.release();
-    return flag && (await mail("webprojetprogramation@gmail.com",mail,
+    
+    return await mail(process.env.MAIL,adresse_mail,
         "Invitation pour une reunion",
         "Bonjours vous etes invitez , voulez vous joindre a la reunion "
-        +nom_reunion+" ? http://localhost/8080/invit/"+id+"/"+username))!==undefined;
+        +nom_reunion+" ? http://localhost:8080/invit/"+id+"/"+username)!==undefined;
 }
 
+//"Bonjours vous etes invitez , voulez vous joindre a la reunion "+nom_reunion+" ? http://localhost/8080/invit/"+id+"/"+username 
 async function mail(from,to,subject,text){
     return info = transporter.sendMail({
-        from : "webprojetprogramation@gmail.com" , 
-        to : mail ,
-        subject : "Invitation pour une reunion" , 
-        text : "Bonjours vous etes invitez , voulez vous joindre a la reunion "+nom_reunion+" ? http://localhost/8080/invit/"+id+"/"+username ,
+        from : from , 
+        to : to ,
+        subject : subject , 
+        text : text,
     });
 }
 async function reunion(id_reunion){
@@ -266,7 +269,7 @@ async function resInvit(reponse,mail,id_reunion){
     const client = await pool.connect();
     client.query("delete from invite where id_reunion=$1 and mail=$2",[id_reunion,mail]);
     if(reponse){
-        client.query("insert into participe values($1,$2)",[id_reunion,mail,0]); 
+        client.query("insert into participe values($1,$2,0)",[id_reunion,mail,0]); 
     }
 }
 /**
@@ -277,9 +280,11 @@ async function resInvit(reponse,mail,id_reunion){
  */
 async function checkInvit(id_reunion,mail){
     const client = await pool.connect();
-    let res = await client.query("select * from invit where id_reunion=$2 and mail=$1");
+    console.log("L'id reunion"+id_reunion+"Le mail : "+mail);
+    let res = await client.query("select * from invite where id_reunion=$1 and mail=$2",[id_reunion,mail]);
+    console.log(res.rows[0]===undefined);
     client.release();
-    return res.rows[0]===undefined;
+    return res.rows[0]!==undefined;
 }
 
 app.get("/", (req, res) => {
@@ -303,8 +308,9 @@ app.post("/login",(req,res)=>{
     operations(req.body.username,req.body.password,req.body.mail,0)
     .then(resultats =>{
         if(resultats>0){
-            getInfoUser(resultats).then(result=>
-                res.json({connecte:true, message:"connecté!", id:resultats,info:result.rows[0]})
+            getInfoUser(resultats).then(result=>{
+                console.log("Coucou "+result.mail);
+                res.json({connecte:true, message:"connecté!", id:resultats,mail:result.mail});}
             );
         }else if(resultats == -1){
             res.json({connecte:false, message:"nom d'utilisateur inconnu!", id:-1});
@@ -325,7 +331,6 @@ app.post("/mdpOublie",(req,res)=>{
         }else{
             mail(process.env.MAIL,resultats.mail,"Reinitialisation Mot de passe",
                 "Cliquez sur ce lien pour reinitialisez votre mot de passe : http://localhost:8080/mdp/"+req.body.username);
-            //TODO ENVOYEZ UN MAIL POUR REINIALISEZ LE MDP (en gros un mail avec un lien localhost:8080/username/newMDP)
             res.json({result: true});
         }
     })
@@ -349,8 +354,8 @@ app.post('/creation',async (req,res)=>{
 
 app.post('/getReunion',(req,res)=>{
     getReunion(req.body.mail)
-    .then(result=>res.json({result: result}))
-    .catch(error =>{console.log("Erreur ..."+error);res.json({result:"Erreur d'username"});});
+    .then(result=>res.json({result: result[0],result_invit:result[1]}))
+    .catch(error =>{console.log("Erreur ..."+error);res.json({result:"Erreur de mail"});});
 });
 app.post('/getInfo',(req,res)=>{ //En gros envoyez via res.json toutes les reunion auquels l'utilisateur peut accepter de participer
     getInfoReunion(req.body.id_reunion)
@@ -359,13 +364,13 @@ app.post('/getInfo',(req,res)=>{ //En gros envoyez via res.json toutes les reuni
 });
 
 app.post('/quittez-reunion',(req,res)=>{
-    supParticipation(req.body.username,req.body.id_reunion,req.body.createur);
+    supParticipation(req.body.mail,req.body.id_reunion,req.body.createur);
     res.json({result: true});//On envoie pour confirmer ca a bien été enregistré
 });
 
 app.post('/invit',(req,res)=>{
-    invitReunion(req.body.username,req.body.inviter,req.body.id,req.body.nom_reunion)
-    .then(result=>res.json({result: result}))
+    invitReunion(req.body.username,req.body.id_reunion,req.body.nom_reunion)
+    .then(result=>{console.log("L'envoie du mail c'est ...."+result);res.json({result: result});})
     .catch(err=>{console.log("Erreur mail :"+err);res.json({result: false});})
 });
 
@@ -378,6 +383,7 @@ app.post('/horraireReunion',(req,res)=>{
 });
 
 app.post('/resultInvit',(req,res)=>{
+    //TODO ajoutez le choix d'horraires 
     resInvit(req.body.reponse,req.body.mail,req.body.id_reunion)
     .then(result=>res.json({ok:true}))
     .catch(err=>{console.log(err);res.json({ok:false})});
@@ -386,9 +392,10 @@ app.post('/resultInvit',(req,res)=>{
  * Renvoie les info de l'utilisateur
  */
 app.post('/infoUser',(req,res)=>{
+    console.log("Coucou tu a bien demandé les infos");
     getInfoUser(req.body.id)
-    .then(result=>res.json({requete:result}))
-    .catch(err=>{console.log(err);res.json({requete:undefined})});
+    .then(result=>{console.log(result);res.json({result:result});})
+    .catch(err=>{console.log(err);res.json({result:undefined})});
 })
 
 app.post('/importReunion',(req,res)=>{
@@ -401,16 +408,21 @@ app.get('/invit/:index/:mail',(req,res)=>{//L'id de la reunion
     checkInvit(req.params.index,req.params.mail).then(result=>{
         if (result){
             res.render("invit",{cons:reunion(req.params.index)});
-            res.sendFile(path.join(__dirname,'public/views/invit.ejs'));
+            res.sendFile(path.join(__dirname,'/views/invit.ejs'));
         }else{
             res.render("erreur",{nom:req.params.mail});
-            res.sendFile(path.join(__dirname,'public/views/erreur.html'));
+            res.sendFile(path.join(__dirname,'/views/erreur.ejs'));
         }
     });
+});
+/**
+ * Mets a jour le vote pour les horraires
+ */
+app.post('/updateProposition',(req,res)=>{
+    
 });
 //recuperez toutes les info des reunion et supprimez les invit quand ils ont clique sur le bouton du fichier invit
 app.get('mdp/:username',(req,res)=>{
     console.log("Bonjour "+req.params.username+"Le site est pas encore finis...");
 });
-
 app.listen(port);

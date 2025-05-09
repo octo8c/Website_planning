@@ -37,7 +37,6 @@ $(document).ready(function(){
         }
         console.log($("#fileImport").val());
         const fileReader = new FileReader();
-        console.log("COucou j'aimerais affichez des trucs j'espere");
         fileReader.onload = function(e){
             var lines = e.target.result.split("\n");
             var tab = [];
@@ -120,6 +119,7 @@ $(document).ready(function(){
     $("#disconnectButton").on("click", function (){
         removeCookie("id");
         removeCookie("username");
+        removeCookie("mail");
         updateUser();
     });
 

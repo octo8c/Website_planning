@@ -1,4 +1,4 @@
-import { post_JSON, getCookie, setCookie, errorMessage, updateUser } from "./utils.mjs";
+import { post_JSON, getCookie, setCookie, errorMessage, updateUser, updateDisplayReunion } from "./utils.mjs";
 
 $(document).ready(function(){
     /* Variables dépendant du contexte JQuery */
@@ -46,17 +46,15 @@ $(document).ready(function(){
             .then(res=>res.json())
             .then(function (res){
                 if (res.connecte){
-                    post_JSON('infoUser',{id:res.id}).then(result=>{
-                        setCookie("id", res.id);
-                        setCookie("username", $("#user_log").val().trim());
-                        setCookie("mail",res.mail);
-                    });
-                   
+                    setCookie("id", res.id);
+                    setCookie("username", $("#user_log").val().trim());
+                    setCookie("mail",res.mail);
                     $("#closeLoginButton").click();
                     alert("vous etes connecté!");
                     updateUser();
                     // TODO : updateUser() permettant d'update le fait que l'utilisateur se connecte / deconnecte
                 } else {
+                    console.log("ERRREUERAYUARHUR");
                     errorMessage("#Connexion", res.message);
                 }
             });
@@ -75,10 +73,10 @@ $(document).ready(function(){
                     setCookie("mail",$("#mail_sub").val());
                     alert("vous êtes correctement inscrit !");
                     $("#closeLoginButton").click();
+                    updateUser();
                 } else {
                     errorMessage("#Inscription", res.message);
                 }
-                //TODO faire quelque chose si la connection a marche
             });
         }
     });
@@ -95,7 +93,6 @@ $(document).ready(function(){
                 } else {
                     errorMessage("#mdpOublie", res.message);
                 }
-                //TODO faire quelque chose si la demande de mdp est passe envoyez un mail
             });
         }
     });
@@ -125,4 +122,11 @@ $(document).ready(function(){
         $(".tabcontent").css('visibility', 'hidden');
         $(".tabcontent").css('visibility', 'inherit');
     });
+    console.log(getCookie("id"));
+    if(getCookie("id")!=-1){
+        console.log("YESS");
+        $("#Create_reunion").css("visibility","visible");
+        console.log("Encore le mail : "+getCookie("mail"));
+        updateDisplayReunion(getCookie("mail"));
+    }
 });

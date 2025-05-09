@@ -24,7 +24,8 @@ create table reunion (
 create table participe (
     id_reunion integer not null, 
     mail varchar(100) not null , 
-    role_reunion integer not null , /*0 aucun droit 1 peut inviter des gens 2 proprietaires */ 
+    role_reunion integer not null , /*0 aucun droit 1 peut inviter des gens 2 proprietaires */
+    choix_horraires integer , /*Correspond a l'indice d'un des horraires choisi */
     primary key (id_reunion , mail)
 );
 

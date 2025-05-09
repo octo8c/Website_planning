@@ -52,11 +52,12 @@ $(document).ready(function () {
             $("input#reunion_name").css("border","1px solid red");
             errorMessage(".InfoReunion","Erreur,veuillez donnez un nom a la reunion");
         }else if(verif_validité_heure(heure_reunion)){
+            console.log("PARTICIPATION"+$("#participe").is(':checked'));
             post_JSON("creation", {
                     nom_reunion : $("#reunion_name").val().trim(),
                     username : getCookie("username") ,/*Jsp encore comment on vas recupere le nom de l'utilisateur qui c'est connecte encore*/
-                    mail : "webprojetprogramation@gmail.com",
-                    participe : $("#participe").checked ,
+                    mail : getCookie("mail"),
+                    participe : $("#participe").is(':checked') ,
                     creneau : heure_reunion
             })
             .then(result => result.json())
@@ -71,7 +72,7 @@ $(document).ready(function () {
                         +heure_reunion[i][1].h+":"+heure_reunion[i][1].m);
                     }
                 }
-                updateDisplayReunion(getCookie("username"));
+                updateDisplayReunion(getCookie("mail"));
                 $("#closeReuButton").click();
             });
         }else{
