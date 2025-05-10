@@ -7,9 +7,12 @@ require('dotenv').config();
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname,'public')));
+
 app.use(express.static('image'));   
 app.use(express.json());
+
 app.set("view engine","ejs");
+app.set('views',path.join(__dirname,'views'));
 
 const pg = require('pg');
    let transporter = nodemailer.createTransport({
@@ -88,11 +91,12 @@ async function addReunion(req){
     }
     console.log("Le tableau d'heure : "+tab_heure)
     const client = await pool.connect();
-    let tab = [tab_heure,reunion_nom,username,date,tab_heure_fin];
+    let tab = [tab_heure,reunion_nom,req.body.descr===undefined?"":req.body.descr,username,date,tab_heure_fin];
     let requete = "select id_reunion from reunion where heure=$1 and nom_reunion=$2 and creator_username=$3 and date_reunion=$4";
     console.log(tab);
-    await client.query("insert into reunion (heure,nom_reunion, creator_username, date_reunion,heure_fin) values ($1,$2,$3,$4,$5)",tab);
-    let id = await client.query(requete,[tab_heure,reunion_nom,username,date]);//Pas 2 reunion qui peuvent commencer au meme horraire
+    await client.query("insert into reunion (heure,nom_reunion,descr, creator_username, date_reunion,heure_fin) values ($1,$2,$3,$4,$5,$6)",tab);
+    let id = await client.query("select id_reunion from reunion where heure=$1 and heure_fin=$2 and nom_reunion=$3 and creator_username=$4 and date_reunion=$5"
+        ,[tab_heure,tab_heure_fin,reunion_nom,username,date]);//Pas 2 reunion qui peuvent commencer au meme horraire
     console.log("Participe : "+req.body.participe);
     if(req.body.participe){
         await client.query("insert into participe values ($1,$2,$3)",[id.rows[0].id_reunion,req.body.mail,2]);
@@ -213,8 +217,10 @@ async function mail(from,to,subject,text){
     });
 }
 async function reunion(id_reunion){
+    console.log("L'id _reunion"+id_reunion);
     const client = await pool.connect();
-    let res = client.query("select * from reunion where id_reunion=$1",[id_reunion]);
+    let res = await client.query("select * from reunion where id_reunion=$1",[id_reunion]);
+    console.log("Le resultats de la requete"+res.rows);
     client.release();
     return res;
 }
@@ -265,11 +271,11 @@ async function importReunion(req){
  * @param {*} mail 
  * @param {*} id_reunion 
  */
-async function resInvit(reponse,mail,id_reunion){
+async function resInvit(reponse,mail,id_reunion,horraire){
     const client = await pool.connect();
     client.query("delete from invite where id_reunion=$1 and mail=$2",[id_reunion,mail]);
     if(reponse){
-        client.query("insert into participe values($1,$2,0)",[id_reunion,mail,0]); 
+        client.query("insert into participe values($1,$2,0)",[id_reunion,mail,horraire]); 
     }
 }
 /**
@@ -337,18 +343,8 @@ app.post("/mdpOublie",(req,res)=>{
 });
 
 app.post('/creation',async (req,res)=>{
-    checkReunion(req.body.username,req.body.creneau)
-    .then(result=>{
-        for(let i=0;i<result.length;i++){
-            if(!result[i]){
-                req.body.creneau.splice(i,1);//On retire tout les horraires qui ne sont pas possibles
-            }
-        }
         console.log("Les reunion restantes : "+req.body.creneau);
-        addReunion(req);
-        res.json({result: result});
-    })
-    .catch(err=>{res.json({result : [false]});console.log(err);});
+        addReunion(req).then(result=>res.json({result: true})).catch(err=>{console.log(err);res.json({result:false});});
 });
 
 app.post('/getReunion',(req,res)=>{
@@ -372,7 +368,9 @@ app.post('/invit',(req,res)=>{
     .then(result=>{console.log("L'envoie du mail c'est ...."+result);res.json({result: result});})
     .catch(err=>{console.log("Erreur mail :"+err);res.json({result: false});})
 });
-
+/**
+ * Renvoie les différents horraires d'une reunion
+ */
 app.post('/horraireReunion',(req,res)=>{
     reunion(req.body.id_reunion).then(result=>
         res.json({heure:result.rows[0].heure,
@@ -383,8 +381,7 @@ app.post('/horraireReunion',(req,res)=>{
 
 app.post('/resultInvit',(req,res)=>{
     //TODO ajoutez le choix d'horraires 
-    console.log("Oui j'ai bien recu une demande");
-    resInvit(req.body.reponse,req.body.mail,req.body.id_reunion)
+    resInvit(req.body.reponse,req.body.mail,req.body.id_reunion,req.body.horraire)
     .then(result=>res.json({ok:true}))
     .catch(err=>{console.log(err);res.json({ok:false})});
 });
@@ -405,22 +402,16 @@ app.post('/importReunion',(req,res)=>{
 });
 
 app.get('/invit/:index/:mail',(req,res)=>{//L'id de la reunion 
-    console.log("On rentre dans l'invit");
         checkInvit(req.params.index,req.params.mail).then(result=>{
             if (result){
-                res.render("invit",{cons:reunion(req.params.index)});
+                reunion(req.params.index).then(result=>{res.render("invit",{cons:result.rows[0]});
+            });
             }else{
                 res.render("erreur",{nom:req.params.mail});
             }
         });
     }
 );
-/**
- * Mets a jour le vote pour les horraires
- */
-app.post('/updateProposition',(req,res)=>{
-    
-});
 //recuperez toutes les info des reunion et supprimez les invit quand ils ont clique sur le bouton du fichier invit
 app.get('mdp/:username',(req,res)=>{
     console.log("Bonjour "+req.params.username+"Le site est pas encore finis...");
