@@ -217,8 +217,8 @@ export async function updateEventInCalendar(force=false){
         $(".event").empty();
         let rows = resultat.result.rows;
         for (let row of rows){
-            for (let d_reu of row.date_reunion){
-                let date = new Date(d_reu.substring(0,10).replaceAll("-",","));
+            for (let i=0; i<row.date_reunion.length; i++){ 
+                let date = new Date(row.date_reunion[i].substring(0,10).replaceAll("-",","));
                 date.setDate(date.getDate()+1) // je ne sais pas pourquoi la base de donnée renvoie une date avec le jour -1
 
                 let borne_min = new Date(new Number($(".agenda-case").first().attr("id")));
@@ -228,10 +228,10 @@ export async function updateEventInCalendar(force=false){
                     let calendar_case = $("#"+date.getTime());
                     if (calendar_case.find(".event").length <= nbr_event_possible_visuellement){
                         let luminescance = 0.299 * row.red + 0.587 * row.green + 0.114 * row.blue;
-                        calendar_case.find(".event").append("<a href='' id='reu-n"+ row.id_reunion +"' class='event_unit' style='color:"+ (luminescance > 128 ? "black" : "white") +";background-color:rgb("+row.red+","+row.green+","+row.blue+")'>"+ row.nom_reunion +"</a>");
-                        $("#reu-n"+row.id_reunion).on("click", function() {
-                            console.log("test");
-                            viewReunion(getCookie("mail"), row);  
+                        calendar_case.find(".event").append("<a href='' id='reu-n"+ row.id_reunion + "h" + row.heure[i].replaceAll(":","W") + "' class='event_unit' style='color:"+ (luminescance > 128 ? "black" : "white") +";background-color:rgb("+row.red+","+row.green+","+row.blue+")'>"+ row.nom_reunion +"</a>");
+                        $("#reu-n"+row.id_reunion+"h"+row.heure[i].replaceAll(":","W")).on("click", function() {
+                            console.log($(this));
+                            viewReunion(getCookie("mail"), row);
                             return false; // empeche la redirection du lien
                         });
                     }
