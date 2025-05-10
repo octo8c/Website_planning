@@ -205,26 +205,4 @@ ul.row {
     }
 }
 
-@media (min-height: 575px){
-    .agenda-case {
-        padding-bottom: 5dvh !important;
-    }
-}
 
-@media (min-height: 475px){
-    .agenda-case {
-        padding-bottom: 3dvh !important;
-    }
-}
-
-@media (min-height: 576px){
-    .agenda-case {
-        padding-bottom:8dvh !important;
-    } 
-}
-
-@media (min-height : 700px){
-    .agenda-case{
-        padding-bottom:10dvh !important;
-    }
-} 

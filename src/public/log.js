@@ -49,11 +49,10 @@ $(document).ready(function(){
                     setCookie("username", $("#user_log").val().trim());
                     setCookie("mail",res.mail);
                     $("#closeLoginButton").click();
-                    alert("vous etes connecté!");
+                    
                     updateUser();
                     // TODO : updateUser() permettant d'update le fait que l'utilisateur se connecte / deconnecte
                 } else {
-                    console.log("ERRREUERAYUARHUR");
                     errorMessage("#Connexion", res.message);
                 }
             });
@@ -119,11 +118,4 @@ $(document).ready(function(){
         $(".tabcontent").css('visibility', 'hidden');
         $(".tabcontent").css('visibility', 'inherit');
     });
-    console.log(getCookie("id"));
-    if(getCookie("id")!=-1){
-        console.log("YESS");
-        $("#Create_reunion").css("visibility","visible");
-        console.log("Encore le mail : "+getCookie("mail"));
-        updateDisplayReunion(getCookie("mail"));
-    }
 });

@@ -37,31 +37,36 @@ $(document).ready(function () {
         $(".date_heure").each(function () {
             let unite_temp = []; // liste a uniquement 2 élément normalement
             let date = $(this).find(".date_reunion").val();
+            console.log("avant: "+date);
+            date = date.substring(0,5) + (parseInt(date.substring(5,7)) + 1) + date.substring(7);
+            console.log("apres:"+date);
             $(this).find(".selectionTime").each(function (){
                 unite_temp.push({
                     "h" : $(this).find(".heure-reu").val(),
-                    "m" : $(this).find(".minute-reu").val() ,
+                    "m" : $(this).find(".minute-reu").val(),
                     "d" : date
                 });
             });
-            heure_reunion.push(unite_temp);            
+            heure_reunion.push(unite_temp);
         });
-
 
         if($("input#reunion_name").val().trim()===""){
             $("input#reunion_name").css("border","1px solid red");
             errorMessage(".InfoReunion","Erreur,veuillez donnez un nom a la reunion");
         }else if(verif_validité_heure(heure_reunion)){
-            console.log("PARTICIPATION"+$("#participe").is(':checked'));
+            let color = hexToRgb($("#color_reu").val()).split(":");
             post_JSON("creation", {
                     nom_reunion : $("#reunion_name").val().trim(),
                     username : getCookie("username") ,/*Jsp encore comment on vas recupere le nom de l'utilisateur qui c'est connecte encore*/
                     mail : getCookie("mail"),
                     participe : $("#participe").is(':checked') ,
-                    creneau : heure_reunion
+                    creneau : heure_reunion,
+                    description : $("#descr_reu").val().trim(),
+                    red : color[0],
+                    green : color[1],
+                    blue : color[2]
             })
             .then(function(result){
-                console.log(result);
                 let resu = result.result;
                 for(let i=0;i<resu.length;i++){
                     if(!resu[i]){//Message d'erreur 
@@ -113,7 +118,6 @@ $(document).ready(function () {
                 $(this).val(date_actuelle.getFullYear()+"-"+add_zero(date_actuelle.getMonth())+"-"+add_zero(date_actuelle.getDate()));
                 $(this).attr("traiter", "true");
             }
-            else console.log($(this).val());
         });
 
         $(".selectionTime select.minute-reu").each(function (){
@@ -145,3 +149,8 @@ $(document).ready(function () {
     }
     
 });
+
+function hexToRgb(hex){
+    hex = hex.replace("#", "");
+    return parseInt(hex.substring(0,2), 16) + ":" + parseInt(hex.substring(2,4), 16) + ":" + parseInt(hex.substring(4,6), 16);
+}

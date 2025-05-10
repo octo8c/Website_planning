@@ -1,3 +1,8 @@
+import { get_JSON, getCookie, post_JSON, updateDisplayReunion, viewReunion } from "./utils.mjs";
+
+var operation_reunion_actuel = 0;
+var nbr_event_possible_visuellement = 5;
+
 $(document).ready(function(){
     $(window).on("resize", () => {
         if ($(window).width() < 800) {
@@ -9,8 +14,8 @@ $(document).ready(function(){
 
     $(window).trigger("resize");  // pour permettre aux écran nativement petit, et non redimensionné d'avoir les petite écritures
 
-    real_date = new Date();
-    date = new Date(real_date.getTime());
+    var real_date = new Date(); real_date.setHours(0, 0, 0, 0)
+    var date = new Date(real_date.getTime()); // date étant modifiée quand l'user passe au mois d'apres ou d'avant
 
     updateCalendar(date, real_date);
 
@@ -52,13 +57,13 @@ $(document).ready(function(){
         $("#numero-jour").html("");
 
 
-        value_of_first_day = first_day_of_the_first_week(date.getFullYear(), date.getMonth());
+        let value_of_first_day = first_day_of_the_first_week(date.getFullYear(), date.getMonth());
         let temp_d = new Date(date);
         temp_d.setDate(value_of_first_day - last_day_in_month(date.getFullYear(), date.getMonth()-1));
 
         if (value_of_first_day != 1){   
             for (let i=value_of_first_day; i<=last_day_in_month(date.getFullYear(), date.getMonth()-1); i++){ // start of the week from potentially the previous month
-                $("#numero-jour").append("<li class='disabled agenda-case' real_date='"+ temp_d.getTime() +"'>"+ i +"</li>");
+                $("#numero-jour").append("<li class='disabled agenda-case' id='"+ temp_d.getTime() +"'>"+ i +"<div class='event'> </div> </li>");
                 temp_d.setDate(temp_d.getDate()+1);
             }
         }
@@ -66,14 +71,14 @@ $(document).ready(function(){
         temp_d = new Date(date);
         for (let i=1; i<=last_day_in_month(date.getFullYear(), date.getMonth()); i++){
             temp_d.setDate(i);
-            $("#numero-jour").append("<li class='agenda-case' real_date='"+ temp_d.getTime() +"'>"+i+"</li>");
+            $("#numero-jour").append("<li class='agenda-case' id='"+ temp_d.getTime() +"'>"+i+"<div class='event'> </div> </li>");
         }
 
         let indice_jour=1;
         let totalDays = $("#numero-jour li").length;
         temp_d.setDate(temp_d.getDate()+1);
         while (totalDays % 7 !== 0) {
-            $("#numero-jour").append('<li class="disabled agenda-case" real_date="'+ temp_d.getTime() +'">'+indice_jour+'</li>');
+            $("#numero-jour").append('<li class="disabled agenda-case" id="'+ temp_d.getTime() +'">'+indice_jour+" <div class='event'> </div> </li>");
             temp_d.setDate(temp_d.getDate()+1);
             indice_jour++;
             totalDays++;
@@ -89,7 +94,7 @@ $(document).ready(function(){
 
 
     function first_day_of_the_first_week(year, month){
-        date_temp = new Date(year, month, 1);
+        let date_temp = new Date(year, month, 1);
         while (date_temp.getDay() != 1){ // until we found the monday
             date_temp.setDate(date_temp.getDate()-1);
         }
@@ -98,6 +103,7 @@ $(document).ready(function(){
 
 
     function updateCalendar(date, real_date){
+        updateEventInCalendar(true);
         $("#monthYear").html(month_to_string(date.getMonth()) + " " + date.getFullYear());
         construct_days(date);
         $(".agenda-case").hover(function () {$(this).addClass("selected");}, function () {$(this).removeClass("selected");});
@@ -110,7 +116,7 @@ $(document).ready(function(){
 
         // affichage quand on doubleclick sur un jour
         $(".agenda-case").on("dblclick", function () {
-            let t_date = new Date(new Number($(this).attr("real_date")));
+            let t_date = new Date(new Number($(this).attr("id")));
             //alert("a faire");   
 
             $("#Create_reunion").trigger("click"); // on trigger l'evenement création réunion
@@ -119,6 +125,53 @@ $(document).ready(function(){
     }
 
 
+    // Affichage des évènements dans le calendrier, si force=true on skip les vérifications de l'utilisateur 
+    async function updateEventInCalendar(force=false){
+        if (getCookie("id") == undefined && !force){
+            setTimeout(updateEventInCalendar, 1000);
+            return;
+        }
+
+        let ope_reu_distant = await get_JSON("nbr_reu");
+        ope_reu_distant = ope_reu_distant.result;
+        if (ope_reu_distant == operation_reunion_actuel && !force){ // si pas de changement dans la base de donnée on fait rien
+            setTimeout(updateEventInCalendar, 1000);            
+            return;
+        }
+
+        updateDisplayReunion(getCookie("mail"));
+        post_JSON("getReunion", {mail: getCookie("mail")})
+        .then(function(resultat) {
+            $(".event").empty();
+            let rows = resultat.result.rows;
+            for (let row of rows){
+                for (let d_reu of row.date_reunion){
+                    let date = new Date(d_reu.substring(0,10).replaceAll("-",","));
+                    date.setDate(date.getDate()+1) // je ne sais pas pourquoi la base de donnée renvoie une date avec le jour -1
+
+                    let borne_min = new Date(new Number($(".agenda-case").first().attr("id")));
+                    let borne_max = new Date(new Number($(".agenda-case").last().attr("id")));
+
+                    if (date >= borne_min && date <= borne_max){
+                        let calendar_case = $("#"+date.getTime());
+                        if (calendar_case.find(".event").length <= nbr_event_possible_visuellement){
+                            let luminescance = 0.299 * row.red + 0.587 * row.green + 0.114 * row.blue;
+                            calendar_case.find(".event").append("<a href='' id='reu-n"+ row.id_reunion +"' class='event_unit' style='color:"+ (luminescance > 128 ? "black" : "white") +";background-color:rgb("+row.red+","+row.green+","+row.blue+")'>"+ row.nom_reunion +"</a>");
+                            $("#reu-n"+row.id_reunion).on("click", function() {
+                                console.log("test");
+                                viewReunion(getCookie("mail"), row);  
+                                return false; // empeche la redirection du lien
+                            });
+                        }
+                    }
+                }
+            }
+
+            operation_reunion_actuel = ope_reu_distant;
+            setTimeout(updateEventInCalendar, 2000);
+        });
+    }
+    updateEventInCalendar();
 });
 
 /**

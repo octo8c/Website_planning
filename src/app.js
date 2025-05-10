@@ -11,6 +11,11 @@ app.use(express.static('image'));
 app.use(express.json());
 app.set("view engine","ejs");
 
+var operation_reunion = 0; // sera incrémenter à chaque opération faites sur les réunions EST TRES IMPORTANT POUR ECONOMISER LES REQUETES A LA BDD 
+ 
+
+ 
+
 const pg = require('pg');
    let transporter = nodemailer.createTransport({
         host : 'smtp.gmail.com', 
@@ -77,29 +82,42 @@ async function operations(username,motdepasse,mail,mode) {
  * @returns 
  */
 async function addReunion(req){
-    const reunion_nom = req.body.nom_reunion;
-    const username = req.body.username;
-    var tab_heure = [],tab_heure_fin = [],date  = [];
-    console.log(req.body.creneau);
-    for(let i =0;i<req.body.creneau.length;i++){
-        date [i] = req.body.creneau[i][0].d;
-        tab_heure[i]=req.body.creneau[i][0].h+":"+req.body.creneau[i][0].m+":00";
-        tab_heure_fin[i]=req.body.creneau[i][1].h+":"+req.body.creneau[i][1].m+":00";
+    try {
+        const reunion_nom = req.body.nom_reunion;
+        const username = req.body.username;
+        let tab_heure = [],tab_heure_fin = [],date  = [];
+        let red=req.body.red, blue=req.body.blue, green=req.body.green;
+        let descr = req.body.description; 
+
+        console.log(req.body.creneau);
+
+        for(let i =0;i<req.body.creneau.length;i++){
+            date[i] = req.body.creneau[i][0].d;
+            console.log("date"+date[i]);
+            tab_heure[i]=req.body.creneau[i][0].h+":"+req.body.creneau[i][0].m+":00";
+            console.log("heure"+tab_heure[i]);
+            tab_heure_fin[i]=req.body.creneau[i][1].h+":"+req.body.creneau[i][1].m+":00";
+            console.log("heure fin"+tab_heure_fin[i]);
+        }
+        const client = await pool.connect();
+        let tab = [tab_heure,reunion_nom,username,date,tab_heure_fin, red, blue, green, descr];
+        let requete = "select id_reunion from reunion where heure=$1 and nom_reunion=$2 and creator_username=$3 and date_reunion=$4";
+        await client.query("insert into reunion (heure,nom_reunion, creator_username, date_reunion,heure_fin, red, blue, green, descr) values ($1,$2,$3,$4,$5,$6,$7,$8,$9)",tab);
+        let id = await client.query(requete,[tab_heure,reunion_nom,username,date]);//Pas 2 reunion qui peuvent commencer au meme horraire
+        await client.query("insert into participe values ($1,$2,$3)",[id.rows[0].id_reunion,username,2]);
+        if(req.body.participe){
+            await client.query("insert into participe values ($1,$2,$3)",[id.rows[0].id_reunion,req.body.mail,2]);
+        }
+        client.release();
+        console.log("ajout d'une réunion !");
+        return id.rows[0].id_reunion;
+    } catch (err) {
+        console.error(err);
+        return null;
     }
-    console.log("Le tableau d'heure : "+tab_heure)
-    const client = await pool.connect();
-    let tab = [tab_heure,reunion_nom,username,date,tab_heure_fin];
-    let requete = "select id_reunion from reunion where heure=$1 and nom_reunion=$2 and creator_username=$3 and date_reunion=$4";
-    console.log(tab);
-    await client.query("insert into reunion (heure,nom_reunion, creator_username, date_reunion,heure_fin) values ($1,$2,$3,$4,$5)",tab);
-    let id = await client.query(requete,[tab_heure,reunion_nom,username,date]);//Pas 2 reunion qui peuvent commencer au meme horraire
-    console.log("Participe : "+req.body.participe);
-    if(req.body.participe){
-        await client.query("insert into participe values ($1,$2,$3)",[id.rows[0].id_reunion,req.body.mail,2]);
-    }
-    client.release();
-    return id.rows[0].id_reunion;
+    
 }
+
 /**
  * Renvoie les info de toutes les reunion ou l'utilisateur est invité / participe
  * @param {*} mail
@@ -114,6 +132,9 @@ async function getReunion(mail){
     client.release();
     return [res,res_invit];
 }
+
+
+
 /**
  * Verifie si la reunion peut bien etre ajouté
  * @param {*} username 
@@ -236,12 +257,10 @@ async function importReunion(req){
         console.log("PAS PASSE CHECK REUNION//reunion déja ajouté");
         return 2;
     }
-    console.log(req.body.invites);
     await addReunion(req).then(result=>id=result).catch(err=>{console.log("Reunion déja ajouté erreur : "+err.stack);id=-1;});
     if(id===-1) return 1;
     const client = await pool.connect();
     for(let participant_addr of req.body.invites){
-        console.log(participant_addr);
         let res = await client.query("select username from utilisateur where mail=$1",[participant_addr]);
         let pseudo = "";
         if(res.rows[0]!==undefined){
@@ -271,6 +290,7 @@ async function resInvit(reponse,mail,id_reunion){
     if(reponse){
         client.query("insert into participe values($1,$2,0)",[id_reunion,mail,0]); 
     }
+    operation_reunion++;
 }
 /**
  * Verifie que l'utilisateur a bien été invité a la reunion id_reunion
@@ -337,8 +357,10 @@ app.post("/mdpOublie",(req,res)=>{
 });
 
 app.post('/creation',async (req,res)=>{
+    operation_reunion++;
     checkReunion(req.body.username,req.body.creneau)
     .then(result=>{
+        console.log("voici avant : " + req.body.creneau);
         for(let i=0;i<result.length;i++){
             if(!result[i]){
                 req.body.creneau.splice(i,1);//On retire tout les horraires qui ne sont pas possibles
@@ -363,6 +385,7 @@ app.post('/getInfo',(req,res)=>{ //En gros envoyez via res.json toutes les reuni
 });
 
 app.post('/quittez-reunion',(req,res)=>{
+    operation_reunion++;    
     supParticipation(req.body.mail,req.body.id_reunion,req.body.createur);
     res.json({result: true});//On envoie pour confirmer ca a bien été enregistré
 });
@@ -418,11 +441,15 @@ app.get('/invit/:index/:mail',(req,res)=>{//L'id de la reunion
 /**
  * Mets a jour le vote pour les horraires
  */
-app.post('/updateProposition',(req,res)=>{
-    
-});
+app.post('/updateProposition',(req,res)=>{});
+
 //recuperez toutes les info des reunion et supprimez les invit quand ils ont clique sur le bouton du fichier invit
 app.get('mdp/:username',(req,res)=>{
     console.log("Bonjour "+req.params.username+"Le site est pas encore finis...");
 });
+
+app.get('/nbr_reu', (req, res)=>{
+    res.json({result: operation_reunion});
+});
+
 app.listen(port);
