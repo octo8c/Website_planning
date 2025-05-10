@@ -1,27 +1,74 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-        <script src="../public/invitation.js"></script>
-    </head>
-    <body>
-        <h2><%= cons.nom_reunion %></h2>
-        <p>Reunion de <%= cons.creator_username%></p>
-        <div id="horraires">
-        </div>
-        <p><%= cons.descr %></p>
-        <p>Acceptez vous de rejoindre la reunion ? </p>
-        <label for="yes">
-            Oui
-            <input type="checkbox" id="yes" value="false">
-        </label>
-        <label for="no">
-            Non
-            <input type="checkbox" id="no">
-        </label>
 
-        <button id="submitForm">Envoyez</button>
-    </body>
+<head>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+</head>
+
+<body>
+    <h2>
+        <%= cons.nom_reunion %>
+    </h2>
+    <p>Reunion de <%= cons.creator_username%>
+    </p>
+    <div id="horraires">
+        <h3>Horraires possible</h3>
+        <%for (let i=0;i<cons.heure.length;i++){ %>
+            <button id="bouton<%=i%>" 
+            onclick="handleClick(<%=i%>)">
+            <%=cons.date_reunion[i]%> <%=cons.heure[i] %>:<%=cons.heure_fin[i]%></button>
+         <% } %>
+    </div>
+    <p>
+        <%= cons.descr %>
+    </p>
+    <p>Acceptez vous de rejoindre la reunion ? </p>
+    <label for="yes">
+        Oui
+        <input type="checkbox" id="yes" value="false">
+    </label>
+    <label for="no">
+        Non
+        <input type="checkbox" id="no">
+    </label>
+
+    <button id="submitForm">Envoyez</button>
+    <script>
+        let horraire = -1;
+        function handleClick(i){
+            $("button#bouton"+horraire).css('border','');
+            console.log(i);
+            horraire = i;
+            $("button#bouton"+i).css('border','2px solid green');
+            console.log("dauidbadb");
+        }
+        $(document).ready(function () {
+            $("#yes").on('change', function () {
+                $("#no").prop("checked", false);
+            });
+            $("#no").on('change', function () {
+                $("#yes").prop("checked", false);
+            });
+            $("#submitForm").on('click', function () {
+                //On envoie au serveur la reponse
+                $.post('http://localhost:8080/resultInvit', {
+                    result: $("#yes").is(':checked'),
+                    mail: $(location).attr('href').split('/')[5],
+                    id_reunion: $(location).attr('href').split('/')[4] , 
+                    horraire : horraire
+                }).then(result => {
+                    if (result.ok) {
+                        $("body").empty();
+                        $("body").append("<h1>Votre reponse a bien été enregistré</h1>");
+                    }else{
+                        $("body").empty();
+                        $("body").append("<h1>Erreur votre requete a eu un probleme</h1>");
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+
 </html>
