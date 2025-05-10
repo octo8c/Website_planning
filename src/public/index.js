@@ -1,4 +1,4 @@
-import { getCookie, post_JSON, removeCookie, updateUser } from "./utils.mjs";
+import { getCookie, post_JSON, removeCookie, updateEventInCalendar, updateUser } from "./utils.mjs";
 
 $(document).ready(function(){
 

@@ -448,8 +448,5 @@ app.get('mdp/:username',(req,res)=>{
     console.log("Bonjour "+req.params.username+"Le site est pas encore finis...");
 });
 
-app.get('/nbr_reu', (req, res)=>{
-    res.json({result: operation_reunion});
-});
 
 app.listen(port);
