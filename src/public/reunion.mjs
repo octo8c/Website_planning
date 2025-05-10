@@ -1,4 +1,4 @@
-import { updateDisplayReunion, post_JSON, errorMessage, getCookie } from "./utils.mjs";
+import { updateDisplayReunion, post_JSON, errorMessage, getCookie, updateEventInCalendar } from "./utils.mjs";
 
 $(document).ready(function () {
 
@@ -73,7 +73,7 @@ $(document).ready(function () {
                         +heure_reunion[i][1].h+":"+heure_reunion[i][1].m);
                     }
                 }
-                updateDisplayReunion(getCookie("mail"));
+                updateEventInCalendar(true);
                 $("#closeReuButton").click();
             });
         }else{

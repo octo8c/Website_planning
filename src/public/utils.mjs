@@ -42,7 +42,9 @@ export function updateDisplayReunion(mail){
             if (rows[list_date[i][0]].heure.length == 0) {
                 continue;
             }
-            $("#Reunion_fix").append("<a href =\"\"id="+rows[list_date[i][0]].id_reunion+" >Reunion a "+rows[list_date[i][0]].heure[0].substring(0,5)+" , le "+rows[list_date[i][0]].date_reunion[0].substring(0,10)+".Createur : "+rows[list_date[i][0]].creator_username+"</a><br>");
+            let reunion_name = rows[list_date[i][0]].nom_reunion;
+            reunion_name = reunion_name.substring(0,1).toUpperCase() + reunion_name.substring(1); // pour mettre en maj la premiere lettre
+            $("#Reunion_fix").append("<a href =\"\"id="+rows[list_date[i][0]].id_reunion+" >" + reunion_name + " à "+rows[list_date[i][0]].heure[0].substring(0,5)+", le "+rows[list_date[i][0]].date_reunion[0].substring(0,10).replaceAll("-", "/")+". Auteur: "+rows[list_date[i][0]].creator_username+"</a><br>");
             $("a#"+rows[list_date[i][0]].id_reunion).on('click',function(e){e.preventDefault();viewReunion(getCookie("mail"),rows[list_date[i][0]]);});
         }
 
