@@ -35,7 +35,6 @@ $(document).ready(function(){
         if(!this.files ||!this.files[0]){
             return;
         }
-        console.log($("#fileImport").val());
         const fileReader = new FileReader();
         fileReader.onload = function(e){
             var lines = e.target.result.split("\n");
@@ -43,41 +42,29 @@ $(document).ready(function(){
             let attendees = [];
             let ind = 0;
             lines.forEach(element => {
-                console.log(element);
                 if(element.substring(0,6)==="BEGIN:"){
                     tab = [];
                     attendees = [];
                     ind = 0;
-                    console.log("BEGIN");                    
                 }else if (element.substring(0,8)==="DTSTART:"){
                     tab[0]=construct_date(element.split(":")[1]);
                     tab[2]=construct_time(element.split("T")[4]);
-                    console.log("DTSTART");
                 }else if(element.substring(0,6)==="DTEND:"){
                     tab[1]=construct_date(element.split(":")[1]);
                     tab[3]=construct_time(element.split("T")[2]);
-                    console.log("DTEND:");
                 }else if (element.substring(0,8)==="SUMMARY:"){
                     tab[4] = element.split("SUMMARY:")[1];
-                    console.log("SUMMARY:");
                 }else if (element.substring(0,12)==="DESCRIPTION:"){
                     tab[5] = element.split("DESCRIPTION:")[1];
-                    console.log("DESCRIPTION:");
                 }else if (element.substring(0,9)==="LOCATION:"){
                     tab[7] = element.split(":")[1];
-                    console.log("LOCATION");
                 }else if (element.substring(0,9)==="ORGANIZER"){
                     tab[6]=element.split("CN=")[1].split(":")[0];//On suppose qu'on 
-                    console.log("ORGANIZER");
                 }else if (element.substring(0,9)==="ATTENDEE;"){
                     attendees[ind] =element.split("MAILTO:")[1];
                     ind++;
-                    console.log("ATTENDEE");
                 }else if (element.substring(0,4)==="END:"){
-                    console.log("END:");
-                    console.log(attendees);
                     if(element.substring(4)==="VEVENT"){
-                        console.log(""+tab);
                         post_JSON('importReunion',{
                             date_debut : tab[0] ,
                             date_fin : tab[1] , 
@@ -92,7 +79,7 @@ $(document).ready(function(){
                             if(!res.result){
                                 errorMessage("#InfoReunion","Erreur fichier au mauvais format");
                             }else{
-                                updateDisplayReunion(getCookie("username"));
+                                updateDisplayReunion(getCookie("mail"));
                             }
                         });
                     }
@@ -105,7 +92,7 @@ $(document).ready(function(){
     });
 
 
-    // regle pour ajouter un input de selection d'heure et de minute personnalisé
+    // regle pour ajouter un input de selection d'heure et de minute personnalisé dès le début de la page ! A GARDER
     $(".selectionTime").append($("#selection-heure-reu").html());
     // on enleve le hidden
     $(".selectionTime").css("display : block");
@@ -113,6 +100,10 @@ $(document).ready(function(){
 
     // on enleve l'ID de l'element pour eviter des doublons d'ID
     $(".selectionTime").find("*").removeAttr("id");
+    
+    // on retire la class de l'élément précédent car inutile
+    $("#selection-heure-reu .heure-reu").removeClass("heure-reu");
+    $("#selection-heure-reu .minute-reu").removeClass("minute-reu");
 
 
     $("#disconnectButton").on("click", function (){
