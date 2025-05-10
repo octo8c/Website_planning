@@ -7,9 +7,12 @@ require('dotenv').config();
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname,'public')));
+
 app.use(express.static('image'));   
 app.use(express.json());
+
 app.set("view engine","ejs");
+app.set('views',path.join(__dirname,'views'));
 
 var operation_reunion = 0; // sera incrémenter à chaque opération faites sur les réunions EST TRES IMPORTANT POUR ECONOMISER LES REQUETES A LA BDD 
  
@@ -115,7 +118,6 @@ async function addReunion(req){
         console.error(err);
         return null;
     }
-    
 }
 
 /**
@@ -234,8 +236,10 @@ async function mail(from,to,subject,text){
     });
 }
 async function reunion(id_reunion){
+    console.log("L'id _reunion"+id_reunion);
     const client = await pool.connect();
-    let res = client.query("select * from reunion where id_reunion=$1",[id_reunion]);
+    let res = await client.query("select * from reunion where id_reunion=$1",[id_reunion]);
+    console.log("Le resultats de la requete"+res.rows);
     client.release();
     return res;
 }
@@ -284,11 +288,11 @@ async function importReunion(req){
  * @param {*} mail 
  * @param {*} id_reunion 
  */
-async function resInvit(reponse,mail,id_reunion){
+async function resInvit(reponse,mail,id_reunion,horraire){
     const client = await pool.connect();
     client.query("delete from invite where id_reunion=$1 and mail=$2",[id_reunion,mail]);
     if(reponse){
-        client.query("insert into participe values($1,$2,0)",[id_reunion,mail,0]); 
+        client.query("insert into participe values($1,$2,0)",[id_reunion,mail,horraire]); 
     }
     operation_reunion++;
 }
@@ -357,20 +361,8 @@ app.post("/mdpOublie",(req,res)=>{
 });
 
 app.post('/creation',async (req,res)=>{
-    operation_reunion++;
-    checkReunion(req.body.username,req.body.creneau)
-    .then(result=>{
-        console.log("voici avant : " + req.body.creneau);
-        for(let i=0;i<result.length;i++){
-            if(!result[i]){
-                req.body.creneau.splice(i,1);//On retire tout les horraires qui ne sont pas possibles
-            }
-        }
         console.log("Les reunion restantes : "+req.body.creneau);
-        addReunion(req);
-        res.json({result: result});
-    })
-    .catch(err=>{res.json({result : [false]});console.log(err);});
+        addReunion(req).then(result=>res.json({result: true})).catch(err=>{console.log(err);res.json({result:false});});
 });
 
 app.post('/getReunion',(req,res)=>{
@@ -395,7 +387,9 @@ app.post('/invit',(req,res)=>{
     .then(result=>{console.log("L'envoie du mail c'est ...."+result);res.json({result: result});})
     .catch(err=>{console.log("Erreur mail :"+err);res.json({result: false});})
 });
-
+/**
+ * Renvoie les différents horraires d'une reunion
+ */
 app.post('/horraireReunion',(req,res)=>{
     reunion(req.body.id_reunion).then(result=>
         res.json({heure:result.rows[0].heure,
@@ -406,8 +400,7 @@ app.post('/horraireReunion',(req,res)=>{
 
 app.post('/resultInvit',(req,res)=>{
     //TODO ajoutez le choix d'horraires 
-    console.log("Oui j'ai bien recu une demande");
-    resInvit(req.body.reponse,req.body.mail,req.body.id_reunion)
+    resInvit(req.body.reponse,req.body.mail,req.body.id_reunion,req.body.horraire)
     .then(result=>res.json({ok:true}))
     .catch(err=>{console.log(err);res.json({ok:false})});
 });
@@ -428,21 +421,16 @@ app.post('/importReunion',(req,res)=>{
 });
 
 app.get('/invit/:index/:mail',(req,res)=>{//L'id de la reunion 
-    console.log("On rentre dans l'invit");
         checkInvit(req.params.index,req.params.mail).then(result=>{
             if (result){
-                res.render("invit",{cons:reunion(req.params.index)});
+                reunion(req.params.index).then(result=>{res.render("invit",{cons:result.rows[0]});
+            });
             }else{
                 res.render("erreur",{nom:req.params.mail});
             }
         });
     }
 );
-/**
- * Mets a jour le vote pour les horraires
- */
-app.post('/updateProposition',(req,res)=>{});
-
 //recuperez toutes les info des reunion et supprimez les invit quand ils ont clique sur le bouton du fichier invit
 app.get('mdp/:username',(req,res)=>{
     console.log("Bonjour "+req.params.username+"Le site est pas encore finis...");

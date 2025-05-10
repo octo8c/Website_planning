@@ -20,7 +20,6 @@ export function updateDisplayReunion(mail){
                 let year = parseInt(date_split[0]);
                 let month = parseInt(date_split[1]);
                 let day = parseInt(date_split[2]);
-                //On pars du principe que les dates sont superieur >
                 if(year>date.getFullYear()||month>date.getMonth()|| day>date.getDay()||tempsMax>date.getHours()*60+date.getMinutes()){ // Si la date est bien suéperieur 
                     list_date.push( [ind,new Date(year,month,day),tempsMax]);
                     ind++;
@@ -79,7 +78,8 @@ export function viewInvit(mail,row){
 
 export function viewReunion(mail,row){
     let createur = "";
-
+    $("#display-info").empty();
+    console.log(row+"L'id de la reunion"+row.id_reunion);
     post_JSON("getInfo", {id_reunion:row.id_reunion})
     .then(function(resultats){
         let participants = "";
@@ -123,6 +123,7 @@ export function viewReunion(mail,row){
                     if(!res.result){
                         errorMessage("display-info","Erreur mail pas envoyez");
                     }else{//On update la liste des participants
+                        console.log("Oui j'ai bien ajouté : "+row.id_reunion+"mail : "+mail);
                         viewReunion(mail,row);
                     }
                 })
