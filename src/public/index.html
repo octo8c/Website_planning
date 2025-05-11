@@ -4,13 +4,12 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/index.css">
     <link rel="stylesheet" href="/log.css">
     <link rel="stylesheet" href="/calendar.css">
     <link rel="stylesheet" href="/popup.css">
+    <link rel="stylesheet" href="reunion.css">
     <title> First Agenda </title>
     <link rel="icon" href="mp_icon.png" type="image/png">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -176,11 +175,11 @@
         </div>
     <!-- Pop up affichage reunion-->
         <div id="voirReunionDiv" class="col-md-3">
-            <p>Reunion déja prévu : </p>
+            <h2 id="reu_prevu">Réunion déja prévu : </h2>
             <div id="Reunion_fix"></div>
-            <p>Reunion sans horraires : </p>
+            <h2 id="reu_sans_horaire">Réunion sans horaires : </h2>
             <div id="Reunion_flex"></div>
-            <p>Reunion ou vous etes invites</p>
+            <h2 id="réu_invité">Réunion ou vous êtes invité :</h2>
             <div id="Reunion_invit"></div>
         </div>
     </div>

@@ -25,7 +25,7 @@ export function updateDisplayReunion(mail){
                     ind++;
                 }    
             }else{/*Toutes les reunions qui n'ont pas d'horraires definis */
-                $("#Reunion_flex").append("<a href =\"\"id="+row.id_reunion+">Reunion de +"+row.creator_username+"</a><br>");
+                $("#Reunion_flex").append("<a href =\"\"id="+row.id_reunion+" class='nom_reu'>Reunion de +"+row.creator_username+"</a>");
                 $("a#"+row.id_reunion).on('click',function(e){e.preventDefault();viewReunion(getCookie("mail"),row);});
             }
         }
@@ -44,12 +44,12 @@ export function updateDisplayReunion(mail){
             }
             let reunion_name = rows[list_date[i][0]].nom_reunion;
             reunion_name = reunion_name.substring(0,1).toUpperCase() + reunion_name.substring(1); // pour mettre en maj la premiere lettre
-            $("#Reunion_fix").append("<a href =\"\"id="+rows[list_date[i][0]].id_reunion+" >" + reunion_name + " à "+rows[list_date[i][0]].heure[0].substring(0,5)+", le "+rows[list_date[i][0]].date_reunion[0].substring(0,10).replaceAll("-", "/")+". Auteur: "+rows[list_date[i][0]].creator_username+"</a><br>");
+            $("#Reunion_fix").append("<a class='nom_reu' href =\"\"id="+rows[list_date[i][0]].id_reunion+" >" + reunion_name + " à "+rows[list_date[i][0]].heure[0].substring(0,5)+", le "+rows[list_date[i][0]].date_reunion[0].substring(0,10).replaceAll("-", "/")+". Auteur: "+rows[list_date[i][0]].creator_username+"</a>");
             $("a#"+rows[list_date[i][0]].id_reunion).on('click',function(e){e.preventDefault();viewReunion(getCookie("mail"),rows[list_date[i][0]]);});
         }
 
         for(let row of rows_invit){
-            $("#Reunion_invit").append("<a href =\"\"id="+row.id_reunion+" >Reunion de +"+row.creator_username+"</a><br>");
+            $("#Reunion_invit").append("<a class='nom_reu' href =\"\"id="+row.id_reunion+" >Reunion de +"+row.creator_username+"</a>");
             $("a#"+rows[list_date[i][0]].id_reunion).on('click',function(e){e.preventDefault();viewInvit(getCookie("mail"),row)});
         }
 
@@ -65,7 +65,7 @@ export function viewInvit(mail,row){
     }
     $("#display-info").append("<h3>L'organisateur : "+createur+"<h3>");
     if(row.date_reunion.length === 1){
-        $("#display-info").append("<p>"+row.date_reunion[0] +"</p><br>");
+        $("#display-info").append("<p>"+row.date_reunion[0] +"</p>");
         $("#display-info").append("<p>Reunion de "+row.heure[0]+" : "+row.heure_fin[0]+" </p>");
     }else{
         $("#display-info").append("<p>Horraires possibles : </p>");
@@ -87,7 +87,7 @@ export function viewReunion(mail,row){
         let participants = "";
         $("#display-info").append("<h3><b>"+row.nom_reunion+"</b></h3>");
         if(row.date_reunion.length === 1){
-            $("#display-info").append("<p>"+row.date_reunion[0] +"</p><br>");
+            $("#display-info").append("<p>"+row.date_reunion[0] +"</p>");
             $("#display-info").append("<p>Reunion de "+row.heure[0]+" : "+row.heure_fin[0]+" </p>");
         }else{
             $("#display-info").append("<p>Horraires possibles : </p>");
@@ -178,7 +178,11 @@ export function setIdError(new_value){
 }
 
 export function errorMessage(zone,text){
-    $(zone).append("<p style=color:red id=errorMessage"+id_error+">"+text+"</p>");
+    userMessage(zone, text, "red");
+}
+
+export function userMessage(zone, text, color){
+    $(zone).append("<p style='font-size:larger;font-weight:bold; color:"+color+"' id=errorMessage"+id_error+">"+text+"</p>");
     let erreur = id_error;
     id_error++;
     setTimeout(()=>{

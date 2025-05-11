@@ -59,19 +59,21 @@ async function operations(username,motdepasse,mail,mode) {
         }else if(mode===2){
             res = await client.query("update utilisateur set mot_de_passe = $1 where username=$2",[motdepasse,username]);
             client.release();
-            return row;
+            return row.id;
         }
         flag = true;
     }
     if(mode===1){//Tentative d'inscription et aucun utilisateur qui a le meme pseudo 
         await client.query("Insert into utilisateur values ($1,$2,$3)",[username,mail,motdepasse]);
         let res = await client.query("select id from utilisateur where username=$1 and mot_de_passe=$2", [username, motdepasse]);
-        if (res.length == 0){
+        if (res.rows.length == 0){
             console.log("impossible d'ajouter l'utilisateur dans la base de donnée");
             return -2;
         }
+        console.log(res.rows[0]);
+
         client.release();
-        return res[0];//L'utilisateur est bien ajouté
+        return res.rows[0].id;//L'utilisateur est bien ajouté
     }
     client.release();
     if(flag) return -2;//Pas le bon mdp
@@ -228,12 +230,17 @@ async function invitReunion(username,id,nom_reunion,remove) {
 
 //"Bonjours vous etes invitez , voulez vous joindre a la reunion "+nom_reunion+" ? http://localhost/8080/invit/"+id+"/"+username 
 async function mail(from,to,subject,text){
-    return info = transporter.sendMail({
-        from : from , 
-        to : to ,
-        subject : subject , 
-        text : text,
-    });
+    try {
+        return info = transporter.sendMail({
+            from : from , 
+            to : to ,
+            subject : subject , 
+            text : text,
+        });
+    } catch (error){
+        console.error(error);
+        return;
+    }
 }
 async function reunion(id_reunion){
     console.log("L'id _reunion"+id_reunion);
@@ -347,14 +354,20 @@ app.post("/login",(req,res)=>{
 });
 
 app.post("/mdpOublie",(req,res)=>{
-    operations(req.body.username,req.body.username,2)
+    operations(req.body.username,req.body.username, undefined,2)
     .then(resultats =>{
+        console.log(resultats);
         if (resultats < 0) {
             res.json({result: false, message: "Erreur: utilisateur introuvable!"});
         }else{
-            mail(process.env.MAIL,resultats.mail,"Reinitialisation Mot de passe",
+            try {
+                mail(process.env.MAIL,resultats.mail,"Reinitialisation Mot de passe",
                 "Cliquez sur ce lien pour reinitialisez votre mot de passe : http://localhost:8080/mdp/"+req.body.username);
-            res.json({result: true});
+                res.json({result: true});
+            } catch (error){
+                console.log(error);
+                res.json({result: false, message:"impossible d'envoyer un mail!"});
+            }
         }
     })
     .catch(erreur =>console.log(erreur.stack));

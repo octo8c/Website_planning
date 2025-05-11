@@ -115,7 +115,6 @@ $(document).ready(function(){
         // affichage quand on doubleclick sur un jour
         $(".agenda-case").on("dblclick", function () {
             let t_date = new Date(new Number($(this).attr("id")));
-            //alert("a faire");   
 
             $("#Create_reunion").trigger("click"); // on trigger l'evenement création réunion
             $("#original_creneau .date_reunion").val(t_date.getFullYear()+"-"+add_zero(t_date.getMonth()+1)+"-"+add_zero(t_date.getDate()))
