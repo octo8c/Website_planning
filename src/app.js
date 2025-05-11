@@ -47,7 +47,7 @@ const pool = new pg.Pool({
  */
 async function operations(username,motdepasse,mail,mode) {
     const client = await pool.connect();
-    let res = await client.query ("select * from utilisateur where username='"+username+"'");
+    let res = await client.query ("select * from utilisateur where username=$1",[username]);
     let flag = false;
     for(row of res.rows){
         if(row.mot_de_passe===motdepasse&&mode==0){//Le client est valide
@@ -56,10 +56,6 @@ async function operations(username,motdepasse,mail,mode) {
         }else if (mode===1){
             client.release();
             return -1;//Deja un utilisateur avec le meme pseudo
-        }else if(mode===2){
-            res = await client.query("update utilisateur set mot_de_passe = $1 where username=$2",[motdepasse,username]);
-            client.release();
-            return row;
         }
         flag = true;
     }
@@ -244,12 +240,11 @@ async function reunion(id_reunion){
     return res;
 }
 
-async function exists(username){
+async function getUser(username){
     const client = await pool.connect();
     let res = await client.query("select * from utilisateur where username=$1",[username]);
-    let flag = !(res.rows===undefined || res.rows[0]===undefined);
     client.release();
-    return flag;
+    return res.rows[0];
 }
 /**
  * Ajoute tout les utilisateur de la reunion
@@ -257,7 +252,7 @@ async function exists(username){
  */
 async function importReunion(req){
     let id =0 ;
-    if(!exists(req.body.organisateur)||!checkReunion(req.body.organisateur,req.body.date_debut,req.body.heure_debut,req.body.heure_fin)){
+    if(getUser(req.body.organisateur)!==undefined||!checkReunion(req.body.organisateur,req.body.date_debut,req.body.heure_debut,req.body.heure_fin)){
         console.log("PAS PASSE CHECK REUNION//reunion déja ajouté");
         return 2;
     }
@@ -347,13 +342,16 @@ app.post("/login",(req,res)=>{
 });
 
 app.post("/mdpOublie",(req,res)=>{
-    operations(req.body.username,req.body.username,2)
+    getUser(req.body.username)
     .then(resultats =>{
-        if (resultats < 0) {
+        if (resultats===undefined) {
             res.json({result: false, message: "Erreur: utilisateur introuvable!"});
         }else{
+            console.log(resultats);
             mail(process.env.MAIL,resultats.mail,"Reinitialisation Mot de passe",
-                "Cliquez sur ce lien pour reinitialisez votre mot de passe : http://localhost:8080/mdp/"+req.body.username);
+                "Cliquez sur ce lien pour reinitialisez votre mot de passe : http://localhost:8080/mdp/"+req.body.username)
+                .then(res=>console.log("Et le message est ..."+res))
+                .catch(err=>console.log(err));
             res.json({result: true});
         }
     })
