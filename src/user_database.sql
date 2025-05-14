@@ -2,6 +2,7 @@ drop table if exists utilisateur cascade;
 drop table if exists reunion cascade;
 drop table if exists participe cascade;
 drop table if exists invite cascade ;
+drop table if exists fpass cascade;
 create table utilisateur (
     username varchar(25) unique,
     mail varchar(100) not null unique ,
@@ -38,6 +39,9 @@ create table invite(
     primary key (id_reunion,mail),
     foreign key (id_reunion) references reunion(id_reunion) on update cascade on delete cascade
 );
+create table fpass(
+    mail varchar (100) not null primary key
+);/*Forgotten passw*/
 
 insert into utilisateur values ('undefined', 'undefined', 'dzakjdazdlazdjkaklzaljd');
 insert into utilisateur values ('titouan','Titouan23@gmail.com','pw1');

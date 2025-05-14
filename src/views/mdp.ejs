@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+    </head>
+    <body>
+        <h2>
+            Bonjour , <%=send.name%> vous avez perdu votre mot de passe ? 
+        </h2>
+        <label for="new_mdp"><input type="text" id="new_mdp"></label>
+        <button id="submit_newmdp"></button>
+        <script>
+            $(document).ready(function(){
+                $("#submit_newmdp").on('click',function(){
+                    $.post('http://locahost:8080/newmdp',{password:$("#new_mdp").val()}).then(result=>{
+                        if(result.ok){
+                            $("body").empty();
+                            $("body").append("<h1>Nouveau mot de passe enregsitré</h1>");//Finir ca proprement
+                        }else{
+                            $("<h1>Erreur lors du changement de mots de passe veuillez recommencez ulterieurement</h1>");
+                        }
+                    });
+                });
+            });
+        </script>
+    </body>
+</html>

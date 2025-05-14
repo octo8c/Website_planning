@@ -25,6 +25,7 @@ export function updateDisplayReunion(mail){
                     ind++;
                 }    
             }else{/*Toutes les reunions qui n'ont pas d'horraires definis */
+                console.log("Oui il ya bien un ajout");
                 $("#Reunion_flex").append("<a href =\"\"id="+row.id_reunion+">Reunion de +"+row.creator_username+"</a><br>");
                 $("a#"+row.id_reunion).on('click',function(e){e.preventDefault();viewReunion(getCookie("mail"),row);});
             }
@@ -38,10 +39,11 @@ export function updateDisplayReunion(mail){
             }
         });
         //On les ajoutes alors au reunion prévus
-        for(let i = 0;i<list_date.length;i++){
+        for(let i = 0;i<list_date.length;i++){//On n'affiche pas les reunion déja passé
             if (rows[list_date[i][0]].heure.length == 0) {
                 continue;
             }
+            console.log("Oui les reunions sont vrm ajoutés")
             $("#Reunion_fix").append("<a href =\"\"id="+rows[list_date[i][0]].id_reunion+" >Reunion a "+rows[list_date[i][0]].heure[0].substring(0,5)+" , le "+rows[list_date[i][0]].date_reunion[0].substring(0,10)+".Createur : "+rows[list_date[i][0]].creator_username+"</a><br>");
             $("a#"+rows[list_date[i][0]].id_reunion).on('click',function(e){e.preventDefault();viewReunion(getCookie("mail"),rows[list_date[i][0]]);});
         }
