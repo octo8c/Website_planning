@@ -50,7 +50,7 @@ export function updateDisplayReunion(mail){
 
         for(let row of rows_invit){
             $("#Reunion_invit").append("<a class='nom_reu' href =\"\"id="+row.id_reunion+" >Reunion de +"+row.creator_username+"</a>");
-            $("a#"+rows[list_date[i][0]].id_reunion).on('click',function(e){e.preventDefault();viewInvit(getCookie("mail"),row)});
+            $("a#"+row.id_reunion).on('click',function(e){e.preventDefault();viewInvit(getCookie("mail"),row)});
         }
 
     });
@@ -58,24 +58,29 @@ export function updateDisplayReunion(mail){
 export function viewInvit(mail,row){
     $("#display-info").append("<h3><b>"+row.nom_reunion+"</b></h3>");
     let createur = "";
-    for (let participant of resultats.result.rows){
-        if(participant.role_reunion===2){
-            createur = participant.mail;
+    post_JSON("getInfo", {id_reunion:row.id_reunion})
+    .then(function(resultats){
+        for (let participant of resultats.result.rows){
+            if(participant.role_reunion===2){
+                createur = participant.mail;
+            }
         }
-    }
-    $("#display-info").append("<h3>L'organisateur : "+createur+"<h3>");
-    if(row.date_reunion.length === 1){
-        $("#display-info").append("<p>"+row.date_reunion[0] +"</p>");
-        $("#display-info").append("<p>Reunion de "+row.heure[0]+" : "+row.heure_fin[0]+" </p>");
-    }else{
-        $("#display-info").append("<p>Horraires possibles : </p>");
-        for(let i =0;i<row.date_reunion.length;i++){
-            $("#display-info").append("<button id=invit_"+i+">Le"+row.date_reunion[i]+","+row.heure[i]+"->"+row.heure_fin[i]+"</button>");
-            $("#invit_"+i).on('click',function(){
-                post_JSON('updateProposition',{id_reunion:row.id_reunion,date:row.date_reunion[i],heure:row.heure[i],heure_fin:row.heure_fin[i]});
-            });
+
+        $("#display-info").append("<h3>L'organisateur : "+createur+"<h3>");
+        if(row.date_reunion.length === 1){
+            $("#display-info").append("<p>"+row.date_reunion[0] +"</p>");
+            $("#display-info").append("<p>Reunion de "+row.heure[0]+" : "+row.heure_fin[0]+" </p>");
+        }else{
+            $("#display-info").append("<p>Horraires possibles : </p>");
+            for(let i =0;i<row.date_reunion.length;i++){
+                $("#display-info").append("<button id=invit_"+i+">Le"+row.date_reunion[i]+","+row.heure[i]+"->"+row.heure_fin[i]+"</button>");
+                $("#invit_"+i).on('click',function(){
+                    post_JSON('updateProposition',{id_reunion:row.id_reunion,date:row.date_reunion[i],heure:row.heure[i],heure_fin:row.heure_fin[i]});
+                });
+            }
         }
-    }
+    });
+
 }
 
 export function viewReunion(mail,row){
