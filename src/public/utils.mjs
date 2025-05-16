@@ -96,8 +96,12 @@ export function viewReunion(mail, row, invit) {
     let createur = "";
     if(invit){
         $("#update-res").css("display","inline");
+        $("#ajouterUtilisateur").css("display","none");
+        $("#userType").css("display","none");
     }else{
         $("#update-res").css("display","none");
+        $("#ajouterUtilisateur").css("display","inline");
+        $("#userType").css("display","inline");
     }
     $("#display-info").empty();
     console.log(row + "L'id de la reunion" + row.id_reunion);
@@ -150,6 +154,7 @@ export function viewReunion(mail, row, invit) {
                 $("#display-info").empty();
                 $("#popup-overlay").css("display", "none");
                 $("#modal").css("display", "none");
+                $("#update-res").css("display","none");
                 $("#userType").css("display", "inline");
             });
             let flag = false;
@@ -183,6 +188,7 @@ export function viewReunion(mail, row, invit) {
             });
 
             $("#update-res").on('click', function () {
+                console.log("Oui c'est bon");
                 post_JSON('updateProposition', { id_reunion: row.id_reunion, horraire: res, 
                     accepted: $("#rejoindre").is(":checked"), id: getCookie("id") });
                 res = -1;

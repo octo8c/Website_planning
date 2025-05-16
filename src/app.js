@@ -169,6 +169,35 @@ async function checkReunion(mail, creneau_list) {
     client.release();
     return list_result;
 }
+/**
+ * Envoie a tout les utilisateur qui ont passe un certain delai un mail de relance
+ */
+function remind_participant(){
+    console.log("Affichage reunion");
+    requete("select * from invite",[])
+    .then(res=>{
+        let d = new Date();
+        for (let row of res){
+            console.log("Coucou ces moi");
+            let date_row = new Date(row.date_relance);
+            if(date_row-d <=0){
+                requete("select * from reunion where id_reunion=$1",[row.id_reunion])
+                .then(rer=>
+                    send_mail(process.env.MAIL,row.mail,"Relance reunion",
+                        "Bonjour vous aviez été invité a la reunion "+rer[0].nom_reunion
+                        +"le createur de la reunion "+rer[0].creator_username+" attend encore votre réponse "
+                    +"http://localhost:8080/invit/" + row.id_reunion + "/" + row.mail
+                ));
+                let date_tmp = new Date(d);
+                date_tmp.setDate(d.getDate()+7);
+                requete("update invite set date_relance=$1 where id_reunion=$2 and mail=$3",
+                    [date_tmp.toISOString().slice(0,10),row.id_reunion,row.mail])
+                    .catch(err=>console.log(err));
+            }
+        }
+    });
+    setTimeout(remind_participant,864000000);
+}
 
 async function supParticipation(mail, id_reunion, createur) {
     const client = await pool.connect();
@@ -213,17 +242,18 @@ async function invitReunion(username, id, nom_reunion, remove) {
         adresse_mail = username;
     }
     if (remove) { await client.query("delete from invite where mail=$1", [adresse_mail]); }
-    else { await client.query("insert into invite values($1,$2)", [id, adresse_mail]); }
+    else { let date = new Date();
+        date.setDate(date.getDate() +7);
+        await client.query("insert into invite values($1,$2,$3)", [id, adresse_mail,date]); }
     client.release();
 
-    return await mail(process.env.MAIL, adresse_mail,
+    return await send_mail(process.env.MAIL, adresse_mail,
         "Invitation pour une reunion",
         "Bonjours vous etes invitez , voulez vous joindre a la reunion "
         + nom_reunion + " ? http://localhost:8080/invit/" + id + "/" + username) !== undefined;
 }
 
-//"Bonjours vous etes invitez , voulez vous joindre a la reunion "+nom_reunion+" ? http://localhost/8080/invit/"+id+"/"+username 
-async function mail(from, to, subject, text) {
+async function send_mail(from, to, subject, text) {
     return info = transporter.sendMail({
         from: from,
         to: to,
@@ -257,32 +287,10 @@ async function getUser(username) {
  * Ajoute tout les utilisateur de la reunion
  * @param {*} req 
  */
-async function importReunion(req) {
-    let id = 0;
-    if (getUser(req.body.organisateur) !== undefined || !checkReunion(req.body.organisateur, req.body.date_debut, req.body.heure_debut, req.body.heure_fin)) {
-        console.log("PAS PASSE CHECK REUNION//reunion déja ajouté");
-        return 2;
-    }
-    await addReunion(req).then(result => id = result).catch(err => { console.log("Reunion déja ajouté erreur : " + err.stack); id = -1; });
-    if (id === -1) return 1;
-    const client = await pool.connect();
-    for (let participant_addr of req.body.invites) {
-        let res = await client.query("select username from utilisateur where mail=$1", [participant_addr]);
-        let pseudo = "";
-        if (res.rows[0] !== undefined) {
-            pseudo = res.rows[0].username;
-            //Normalement c'est pas possible sinon la reunion aurait déja été ajouté
-
-        } else {
-            console.log("ENVOIE D'UNE REQUETE");
-            pseudo = participant_addr.split("@")[0];
-            console.log("Le nouveau pseudo :" + pseudo);
-            await client.query("insert into utilisateur(username,mail) values ($1,$2)", [pseudo, participant_addr]);
-        }
-        console.log("Le pseudo : " + pseudo + " id : " + id);
-        //await client.query("insert into participe values ($1,$2,0)",[id,pseudo]);
-    }
-    return 0;
+async function importPersonnal_event(req) {
+    requete("insert into personnal_event(nom_reunion,descr,heure,creator_username,date_reunion,heure_fin) values ($1,$2,$3,$4,$5,$6)",
+        [req.body.nom_reunion,req.body.descr,req.body.heure_debut,req.body.organisateur,req.body.date_debut,req.body.heure_fin]);
+    return 0; 
 }
 /**
  * Supprime l'utilisateur de la table invit et l'ajoute a la table participe si il la souhaite
@@ -324,13 +332,6 @@ async function requete(requete,list_values){
     return res.rows;
 }
 
-async function updateMdp(mdp, mail) {
-    const client = await pool.connect();
-    await client.query("update utilisateur set mot_de_passe=$1 where mail=$2", [mdp, mail]);
-    client.release();
-    return 0;
-}
-
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, 'public/index.html'));
 });
@@ -354,7 +355,6 @@ app.post("/login", (req, res) => {
         .then(resultats => {
             if (resultats > 0) {
                 getInfoUser(resultats).then(result => {
-                    console.log("Coucou " + result.mail);
                     res.json({ connecte: true, message: "connecté!", id: resultats, mail: result.mail });
                 }
                 );
@@ -377,7 +377,7 @@ app.post("/mdpOublie", (req, res) => {
             } else {
                 console.log(resultats);
                 requete("insert into fpass values($1)",[req.body.username]).catch(res=>console.log("Il avait déja demandée un nouveau mot de passe"));
-                mail(process.env.MAIL, resultats.mail, "Reinitialisation Mot de passe",
+                send_mail(process.env.MAIL, resultats.mail, "Reinitialisation Mot de passe",
                     "Cliquez sur ce lien pour reinitialisez votre mot de passe : http://localhost:8080/mdp/" + req.body.username)
                     .then(res => console.log("Et le message est ..." + res))
                     .catch(err => console.log(err));
@@ -418,7 +418,7 @@ app.post('/invit', (req, res) => {
  * Renvoie les différents horraires d'une reunion
  */
 app.post('/horraireReunion', (req, res) => {
-    reunion(req.body.id_reunion).then(result =>
+    requete("select * from reunion where id_reunion=$1",[req.body.id_reunion]).then(result =>
         res.json({
             heure: result.rows[0].heure,
             heure_fin: result.rows[0].heure_fin,
@@ -444,7 +444,7 @@ app.post('/infoUser', (req, res) => {
 })
 
 app.post('/importReunion', (req, res) => {
-    importReunion(req)
+    importPersonnal_event(req)
         .then(_result => res.json({ result: true }))
         .catch(error => { console.log(error.stack); res.json({ result: false }); });
 });
@@ -452,7 +452,7 @@ app.post('/importReunion', (req, res) => {
 app.get('/invit/:index/:mail', (req, res) => {//L'id de la reunion 
     checkInvit(req.params.index, req.params.mail).then(result => {
         if (result) {
-            reunion(req.params.index).then(result => {
+            requete("select * from reunion where id_reunion=$1",[req.params.index]).then(result => {
                 res.render("invit", { cons: result.rows[0] });
             });
         } else {
@@ -498,12 +498,15 @@ app.post('/updateProposition',(req,res)=>{
         }
     })
     .catch(err=>{
-
+        console.log(err);
+        res.json({ok:false});
     });
 });
 
 app.get('/nbr_reu', (req, res) => {
     res.json({ result: operation_reunion });
 });
-
+console.log("COudahudabda");
+remind_participant();
+console.log("oe ces bien appelée");
 app.listen(port);

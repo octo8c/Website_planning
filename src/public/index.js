@@ -79,12 +79,10 @@ $(document).ready(function(){
                             if(!res.result){
                                 errorMessage("#InfoReunion","Erreur fichier au mauvais format");
                             }else{
-                                updateDisplayReunion(getCookie("mail"));
+                                updateUser();
                             }
                         });
                     }
-                }else{
-                    /*On fait rien avec tout ca donc on s'en fous*/
                 }
         });
         }
