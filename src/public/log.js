@@ -1,4 +1,4 @@
-import { post_JSON, getCookie, setCookie, errorMessage, updateUser, updateDisplayReunion } from "./utils.mjs";
+import { post_JSON, getCookie, setCookie, errorMessage, updateUser, updateDisplayReunion, userMessage } from "./utils.mjs";
 
 $(document).ready(function(){
     /* Variables dépendant du contexte JQuery */
@@ -43,17 +43,20 @@ $(document).ready(function(){
         e.preventDefault();
         console.log("Oui j'appuye sur le bouton");
         if(checkInput(to_check_log)){
-            post_JSON("login", {username: $("#user_log").val().trim(), password: $("#pass_log").val().trim()})
+            let usern = $("#user_log").val().trim()
+            post_JSON("login", {username: usern, password: $("#pass_log").val().trim()})
             .then(function (res){
                 console.log("Oui je fais bien les executions de log");
                 if (res.connecte){
                     setCookie("id", res.id);
-                    setCookie("username", $("#user_log").val().trim());
+                    setCookie("username", usern);
                     setCookie("mail",res.mail);
                     $("#closeLoginButton").click();
                     
                     updateUser();
                     // TODO : updateUser() permettant d'update le fait que l'utilisateur se connecte / deconnecte
+
+                    userMessage("#otherDiv", "Bienvenu "+usern+"!", "#4CC747");
                 } else {
                     errorMessage("#Connexion", res.message);
                 }
@@ -64,15 +67,17 @@ $(document).ready(function(){
     $("#Inscription .log_button").on('click',function(e){
         e.preventDefault();
         if(checkInput(to_check_sub)){
-            post_JSON("inscription",{username : $("#user_sub").val().trim(),password : $("#pass_sub").val().trim(),mail : $("#mail_sub").val()})
+            let usern = $("#user_sub").val().trim();
+            post_JSON("inscription",{username : usern, password : $("#pass_sub").val().trim(),mail : $("#mail_sub").val()})
             .then(function(res){
+                console.log(res.result);
                 if (res.result){
                     setCookie("id", res.id);
-                    setCookie("username", $("#user_sub").val().trim());
+                    setCookie("username", usern);
                     setCookie("mail",$("#mail_sub").val());
-                    alert("vous êtes correctement inscrit !");
                     $("#closeLoginButton").click();
                     updateUser();
+                    userMessage("#otherDiv", "Bienvenu "+usern+"!", "#4CC747");
                 } else {
                     errorMessage("#Inscription", res.message);
                 }

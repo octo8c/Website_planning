@@ -1,4 +1,4 @@
-import { updateDisplayReunion, post_JSON, errorMessage, getCookie } from "./utils.mjs";
+import { updateDisplayReunion, post_JSON, errorMessage, getCookie, updateEventInCalendar } from "./utils.mjs";
 
 $(document).ready(function () {
 
@@ -37,9 +37,6 @@ $(document).ready(function () {
         $(".date_heure").each(function () {
             let unite_temp = []; // liste a uniquement 2 élément normalement
             let date = $(this).find(".date_reunion").val();
-            console.log("avant: "+date);
-            date = date.substring(0,5) + (parseInt(date.substring(5,7)) + 1) + date.substring(7);
-            console.log("apres:"+date);
             $(this).find(".selectionTime").each(function (){
                 unite_temp.push({
                     "h" : $(this).find(".heure-reu").val(),
@@ -76,7 +73,7 @@ $(document).ready(function () {
                         +heure_reunion[i][1].h+":"+heure_reunion[i][1].m);
                     }
                 }
-                updateDisplayReunion(getCookie("mail"));
+                updateEventInCalendar(true);
                 $("#closeReuButton").click();
             });
         }else{
@@ -115,7 +112,7 @@ $(document).ready(function () {
     function synchro_date(date_actuelle){
         $(".InfoReunion input[type='date']").each(function (){
             if ($(this).attr("traiter") != "true"){
-                $(this).val(date_actuelle.getFullYear()+"-"+add_zero(date_actuelle.getMonth())+"-"+add_zero(date_actuelle.getDate()));
+                $(this).val(date_actuelle.getFullYear()+"-"+add_zero(date_actuelle.getMonth()+1)+"-"+add_zero(date_actuelle.getDate()));
                 $(this).attr("traiter", "true");
             }
         });

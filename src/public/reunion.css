@@ -1,0 +1,14 @@
+.nom_reu{
+    display: block;
+    font-weight: bold;
+    background-color: #85c1e9;
+    border-radius: 5px;
+    padding: 2px 5px;
+    border: solid black 1px;
+    margin-bottom: 3px;
+    color: blue;
+}
+
+#voirReunionDiv {
+    background-color: aliceblue;
+}

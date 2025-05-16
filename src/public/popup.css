@@ -74,13 +74,6 @@
     margin-right: 20px;
 }
 
-.separateur {
-    width: 30px;
-    text-align: center;
-    border: none;
-    background: none;
-}
-
 .number_creneau {
     margin: 0px;
     margin-right: 10px;
@@ -88,9 +81,23 @@
     width: max-content;
 }
 
+
+.InfoReunion input {
+    border-radius: 5px;
+    background-color: rgb(233, 245, 255);
+}
+
+.separateur {
+    width: 30px;
+    text-align: center;
+    border: none;
+    background: none !important;
+}
+
 .selectionTime *{
     margin: 0px !important;
-    background-color: #e9e9ed;
+    background-color: #e9e9ed !important;
+    border-radius: 0px !important;
 }
 
 .remove_creneau {

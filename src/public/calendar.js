@@ -1,7 +1,5 @@
-import { get_JSON, getCookie, post_JSON, updateDisplayReunion, viewReunion } from "./utils.mjs";
+import { updateEventInCalendar } from "./utils.mjs";
 
-var operation_reunion_actuel = 0;
-var nbr_event_possible_visuellement = 5;
 
 $(document).ready(function(){
     $(window).on("resize", () => {
@@ -31,6 +29,7 @@ $(document).ready(function(){
 
     $("#today").on("click", ()=> {
         date = new Date();
+        date.setHours(0,0,0,0);
         updateCalendar(date, real_date);
     });
 
@@ -103,7 +102,6 @@ $(document).ready(function(){
 
 
     function updateCalendar(date, real_date){
-        updateEventInCalendar(true);
         $("#monthYear").html(month_to_string(date.getMonth()) + " " + date.getFullYear());
         construct_days(date);
         $(".agenda-case").hover(function () {$(this).addClass("selected");}, function () {$(this).removeClass("selected");});
@@ -117,60 +115,15 @@ $(document).ready(function(){
         // affichage quand on doubleclick sur un jour
         $(".agenda-case").on("dblclick", function () {
             let t_date = new Date(new Number($(this).attr("id")));
-            //alert("a faire");   
 
             $("#Create_reunion").trigger("click"); // on trigger l'evenement création réunion
             $("#original_creneau .date_reunion").val(t_date.getFullYear()+"-"+add_zero(t_date.getMonth()+1)+"-"+add_zero(t_date.getDate()))
         });
+        updateEventInCalendar(true);
     }
 
 
-    // Affichage des évènements dans le calendrier, si force=true on skip les vérifications de l'utilisateur 
-    async function updateEventInCalendar(force=false){
-        if (getCookie("id") == undefined && !force){
-            setTimeout(updateEventInCalendar, 1000);
-            return;
-        }
-
-        let ope_reu_distant = await get_JSON("nbr_reu");
-        ope_reu_distant = ope_reu_distant.result;
-        if (ope_reu_distant == operation_reunion_actuel && !force){ // si pas de changement dans la base de donnée on fait rien
-            setTimeout(updateEventInCalendar, 1000);            
-            return;
-        }
-
-        updateDisplayReunion(getCookie("mail"));
-        post_JSON("getReunion", {mail: getCookie("mail")})
-        .then(function(resultat) {
-            $(".event").empty();
-            let rows = resultat.result.rows;
-            for (let row of rows){
-                for (let d_reu of row.date_reunion){
-                    let date = new Date(d_reu.substring(0,10).replaceAll("-",","));
-                    date.setDate(date.getDate()+1) // je ne sais pas pourquoi la base de donnée renvoie une date avec le jour -1
-
-                    let borne_min = new Date(new Number($(".agenda-case").first().attr("id")));
-                    let borne_max = new Date(new Number($(".agenda-case").last().attr("id")));
-
-                    if (date >= borne_min && date <= borne_max){
-                        let calendar_case = $("#"+date.getTime());
-                        if (calendar_case.find(".event").length <= nbr_event_possible_visuellement){
-                            let luminescance = 0.299 * row.red + 0.587 * row.green + 0.114 * row.blue;
-                            calendar_case.find(".event").append("<a href='' id='reu-n"+ row.id_reunion +"' class='event_unit' style='color:"+ (luminescance > 128 ? "black" : "white") +";background-color:rgb("+row.red+","+row.green+","+row.blue+")'>"+ row.nom_reunion +"</a>");
-                            $("#reu-n"+row.id_reunion).on("click", function() {
-                                console.log("test");
-                                viewReunion(getCookie("mail"), row);  
-                                return false; // empeche la redirection du lien
-                            });
-                        }
-                    }
-                }
-            }
-
-            operation_reunion_actuel = ope_reu_distant;
-            setTimeout(updateEventInCalendar, 2000);
-        });
-    }
+    
     updateEventInCalendar();
 });
 

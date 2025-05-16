@@ -227,8 +227,12 @@ export function setIdError(new_value) {
     id_error = new_value;
 }
 
-export function errorMessage(zone, text) {
-    $(zone).append("<p style=color:red id=errorMessage" + id_error + ">" + text + "</p>");
+export function errorMessage(zone,text){
+    userMessage(zone, text, "red");
+}
+
+export function userMessage(zone, text, color){
+    $(zone).append("<p style='font-size:larger;font-weight:bold; color:"+color+"' id=errorMessage"+id_error+">"+text+"</p>");
     let erreur = id_error;
     id_error++;
     setTimeout(() => {
@@ -241,8 +245,8 @@ export function errorMessage(zone, text) {
 
 export function updateUser() {
     updateDisplayReunion(getCookie("mail"));
-    console.log("Oui je suis la");
-    if (getCookie("id") != undefined) { // si l'user est connecté
+    updateEventInCalendar(true);
+    if (getCookie("id") != undefined){ // si l'user est connecté
         $("#loginButton").css("display", "none");
         $("#disconnectButton").css("display", "block");
         $("#Create_reunion").css("visibility", "visible");
@@ -251,4 +255,88 @@ export function updateUser() {
         $("#loginButton").css("display", "block");
         $("#Create_reunion").css("visibility", "hidden");
     }
+}
+
+
+var nbr_event_possible_visuellement = 5;
+
+// Affichage des évènements dans le calendrier, si force=true on skip les vérifications de l'utilisateur 
+export async function updateEventInCalendar(force=false){
+    if (getCookie("id") == undefined && !force){
+        setTimeout(updateEventInCalendar, 10000);
+        return;
+    }
+
+    updateDisplayReunion(getCookie("mail"));
+    post_JSON("getReunion", {mail: getCookie("mail")})
+    .then(function(resultat) {
+        $(".event").empty();
+        let rows = resultat.result.rows;
+        for (let row of rows){
+            for (let i=0; i<row.date_reunion.length; i++){ 
+                let date = new Date(row.date_reunion[i].substring(0,10).replaceAll("-",","));
+                date.setDate(date.getDate()+1) // je ne sais pas pourquoi la base de donnée renvoie une date avec le jour -1
+
+                let borne_min = new Date(new Number($(".agenda-case").first().attr("id")));
+                let borne_max = new Date(new Number($(".agenda-case").last().attr("id")));
+
+                if (date >= borne_min && date <= borne_max){
+                    let calendar_case = $("#"+date.getTime());
+                    if (calendar_case.find(".event").length <= nbr_event_possible_visuellement){
+                        let luminescance = 0.299 * row.red + 0.587 * row.green + 0.114 * row.blue;
+                        calendar_case.find(".event").append("<a href='' id='reu-n"+ row.id_reunion + "h" + row.heure[i].replaceAll(":","W") + "' class='event_unit' style='color:"+ (luminescance > 128 ? "black" : "white") +";background-color:rgb("+row.red+","+row.green+","+row.blue+")'>"+ row.nom_reunion +"</a>");
+                        $("#reu-n"+row.id_reunion+"h"+row.heure[i].replaceAll(":","W")).on("click", function() {
+                            console.log($(this));
+                            viewReunion(getCookie("mail"), row);
+                            return false; // empeche la redirection du lien
+                        });
+                    }
+                }
+            }
+        }
+
+        if (force==false) setTimeout(updateEventInCalendar, 10000);
+    });
+}
+
+
+var nbr_event_possible_visuellement = 5;
+
+// Affichage des évènements dans le calendrier, si force=true on skip les vérifications de l'utilisateur 
+export async function updateEventInCalendar(force=false){
+    if (getCookie("id") == undefined && !force){
+        setTimeout(updateEventInCalendar, 10000);
+        return;
+    }
+
+    updateDisplayReunion(getCookie("mail"));
+    post_JSON("getReunion", {mail: getCookie("mail")})
+    .then(function(resultat) {
+        $(".event").empty();
+        let rows = resultat.result.rows;
+        for (let row of rows){
+            for (let i=0; i<row.date_reunion.length; i++){ 
+                let date = new Date(row.date_reunion[i].substring(0,10).replaceAll("-",","));
+                date.setDate(date.getDate()+1) // je ne sais pas pourquoi la base de donnée renvoie une date avec le jour -1
+
+                let borne_min = new Date(new Number($(".agenda-case").first().attr("id")));
+                let borne_max = new Date(new Number($(".agenda-case").last().attr("id")));
+
+                if (date >= borne_min && date <= borne_max){
+                    let calendar_case = $("#"+date.getTime());
+                    if (calendar_case.find(".event").length <= nbr_event_possible_visuellement){
+                        let luminescance = 0.299 * row.red + 0.587 * row.green + 0.114 * row.blue;
+                        calendar_case.find(".event").append("<a href='' id='reu-n"+ row.id_reunion + "h" + row.heure[i].replaceAll(":","W") + "' class='event_unit' style='color:"+ (luminescance > 128 ? "black" : "white") +";background-color:rgb("+row.red+","+row.green+","+row.blue+")'>"+ row.nom_reunion +"</a>");
+                        $("#reu-n"+row.id_reunion+"h"+row.heure[i].replaceAll(":","W")).on("click", function() {
+                            console.log($(this));
+                            viewReunion(getCookie("mail"), row);
+                            return false; // empeche la redirection du lien
+                        });
+                    }
+                }
+            }
+        }
+
+        if (force==false) setTimeout(updateEventInCalendar, 10000);
+    });
 }

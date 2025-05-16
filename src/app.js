@@ -56,18 +56,24 @@ async function operations(username, motdepasse, mail, mode) {
         } else if (mode === 1) {
             client.release();
             return -1;//Deja un utilisateur avec le meme pseudo
+        }else if(mode===2){
+            res = await client.query("update utilisateur set mot_de_passe = $1 where username=$2",[motdepasse,username]);
+            client.release();
+            return row.id;
         }
         flag = true;
     }
     if (mode === 1) {//Tentative d'inscription et aucun utilisateur qui a le meme pseudo 
         await client.query("Insert into utilisateur values ($1,$2,$3)", [username, mail, motdepasse]);
         let res = await client.query("select id from utilisateur where username=$1 and mot_de_passe=$2", [username, motdepasse]);
-        if (res.length == 0) {
+        if (res.rows.length == 0){
             console.log("impossible d'ajouter l'utilisateur dans la base de donnée");
             return -2;
         }
+        console.log(res.rows[0]);
+
         client.release();
-        return res[0];//L'utilisateur est bien ajouté
+        return res.rows[0].id;//L'utilisateur est bien ajouté
     }
     client.release();
     if (flag) return -2;//Pas le bon mdp
@@ -252,14 +258,19 @@ async function invitReunion(username, id, nom_reunion, remove) {
         "Bonjours vous etes invitez , voulez vous joindre a la reunion "
         + nom_reunion + " ? http://localhost:8080/invit/" + id + "/" + username) !== undefined;
 }
-
-async function send_mail(from, to, subject, text) {
-    return info = transporter.sendMail({
-        from: from,
-        to: to,
-        subject: subject,
-        text: text,
-    });
+//"Bonjours vous etes invitez , voulez vous joindre a la reunion "+nom_reunion+" ? http://localhost/8080/invit/"+id+"/"+username 
+async function send_mail(from,to,subject,text){
+    try {
+        return info = transporter.sendMail({
+            from : from , 
+            to : to ,
+            subject : subject , 
+            text : text,
+        });
+    } catch (error){
+        console.error(error);
+        return;
+    }
 }
 async function reunion(id_reunion) {
     console.log("L'id _reunion" + id_reunion);
