@@ -1,4 +1,5 @@
-import { post_JSON, getCookie, setCookie, errorMessage, updateUser, updateDisplayReunion, userMessage } from "./utils.mjs";
+import { post_JSON, getCookie, setCookie, errorMessage, updateUser, 
+    updateDisplayReunion, userMessage } from "./utils.mjs";
 
 $(document).ready(function(){
     /* Variables dépendant du contexte JQuery */
@@ -36,8 +37,11 @@ $(document).ready(function(){
     }
 
 
-    $(".tabcontent").hide(); // pour qu'au début de la page on ait rien visuellement
-    $(".tabcontent").css("visibility", "visible"); // on redonne la main au jquery pour cacher les éléments, permet d'eviter un effet "fantome" lorsqu'on recharche la page
+    // pour qu'au début de la page on ait rien visuellement
+    $(".tabcontent").hide(); 
+    // on redonne la main au jquery pour cacher les éléments, permet d'eviter
+    // un effet "fantome" lorsqu'on recharche la page
+    $(".tabcontent").css("visibility", "visible"); 
 
     $("#Connexion .log_button").on('click',function(e){
         e.preventDefault();
@@ -52,7 +56,6 @@ $(document).ready(function(){
                     $("#closeLoginButton").click();
                     
                     updateUser();
-                    // TODO : updateUser() permettant d'update le fait que l'utilisateur se connecte / deconnecte
 
                     userMessage("#otherDiv", "Bienvenu "+usern+"!", "#4CC747");
                 } else {
@@ -66,7 +69,8 @@ $(document).ready(function(){
         e.preventDefault();
         if(checkInput(to_check_sub)){
             let usern = $("#user_sub").val().trim();
-            post_JSON("inscription",{username : usern, password : $("#pass_sub").val().trim(),mail : $("#mail_sub").val()})
+            post_JSON("inscription",{username : usern, password : 
+                $("#pass_sub").val().trim(),mail : $("#mail_sub").val()})
             .then(function(res){
                 console.log(res.result);
                 if (res.result){
@@ -90,7 +94,8 @@ $(document).ready(function(){
             .then(function(res){
                 if (res.result){
                     $("#closeLoginButton").click();
-                    alert("un mail à correctement été envoyé à votre adresse mail pour réinitialiser votre mot de passe");
+                    alert("un mail à correctement été envoyé à votre adresse \
+                        mail pour réinitialiser votre mot de passe");
                 } else {
                     errorMessage("#mdpOublie", res.message);
                 }

@@ -1,4 +1,5 @@
-import { updateDisplayReunion, post_JSON, errorMessage, getCookie, updateEventInCalendar } from "./utils.mjs";
+import { updateDisplayReunion, post_JSON, errorMessage, getCookie, 
+    updateEventInCalendar } from "./utils.mjs";
 
 $(document).ready(function () {
 
@@ -23,7 +24,12 @@ $(document).ready(function () {
 
     function verif_validité_heure(tab_heure){
         for (let i=0; i<tab_heure.length; i++){
-            if (tab_heure[i][0].h > tab_heure[i][1].h || (tab_heure[i][0].h == tab_heure[i][1].h && tab_heure[i][0].m > tab_heure[i][1].m)){ // si l'heure de début de réunion est plus grande que l'heure de fin, pareil pour les minutes si les heures sont égales 
+            // si l'heure de début de réunion est plus grande que l'heure 
+            // de fin, pareil pour les minutes si les heures sont égales
+            if (tab_heure[i][0].h > tab_heure[i][1].h 
+                || (tab_heure[i][0].h == tab_heure[i][1].h 
+                && tab_heure[i][0].m > tab_heure[i][1].m)){  
+
                 return false;
             }
         }
@@ -31,7 +37,9 @@ $(document).ready(function () {
     }
 
     $("button#create").on('click',function(){
-        let heure_reunion = []; // liste de liste, chaque sous liste est un créneau contenant donc 2 objet heure (objet heure = {h:1, m:1})
+        // liste de liste, chaque sous liste est un créneau contenant 
+        // donc 2 objet heure (objet heure = {h:1, m:1})
+        let heure_reunion = []; 
 
         // récupération des heures de chaques créneaux
         $(".date_heure").each(function () {
@@ -49,12 +57,13 @@ $(document).ready(function () {
 
         if($("input#reunion_name").val().trim()===""){
             $("input#reunion_name").css("border","1px solid red");
-            errorMessage(".InfoReunion","Erreur,veuillez donnez un nom a la reunion");
+            errorMessage(".InfoReunion","Erreur,veuillez donnez un nom \
+                a la reunion");
         }else if(verif_validité_heure(heure_reunion)){
             let color = hexToRgb($("#color_reu").val()).split(":");
             post_JSON("creation", {
                     nom_reunion : $("#reunion_name").val().trim(),
-                    username : getCookie("username") ,/*Jsp encore comment on vas recupere le nom de l'utilisateur qui c'est connecte encore*/
+                    username : getCookie("username") ,
                     mail : getCookie("mail"),
                     participe : $("#participe").is(':checked') ,
                     creneau : heure_reunion,
@@ -68,7 +77,9 @@ $(document).ready(function () {
                 for(let i=0;i<resu.length;i++){
                     if(!resu[i]){//Message d'erreur 
                         errorMessage(".InfoReunion",
-                        "Erreur vous aurez une autre reunion en cours au creneau "+i+heure_reunion[i].d+","
+                        "Erreur vous aurez une autre reunion en cours au \
+                            creneau "+i+heure_reunion[i].d+","
+
                         +heure_reunion[i][0].h+":"+heure_reunion[i][0].m+"->"
                         +heure_reunion[i][1].h+":"+heure_reunion[i][1].m);
                     }
@@ -77,14 +88,17 @@ $(document).ready(function () {
                 $("#closeReuButton").click();
             });
         }else{
-            errorMessage(".InfoReunion","Mettez une heure de debut inférieur a l'heure de fin");
+            errorMessage(".InfoReunion","Mettez une heure de debut inférieur \
+                a l'heure de fin");
         }
     });
 
 
     /**
      * 
-     * @param {*} date determine if we have to add a zero to correctly print the value
+     * @param {*} date determine if we have to add a zero to correctly 
+     * print the value
+     * 
      * @returns the value with or without a zero
      */
     function add_zero(date){
@@ -95,7 +109,8 @@ $(document).ready(function () {
         }
     }
 
-    // regle pour direct mettre la date et l'heure a la date et l'heure actuelle dans les champs creer reunion 
+    // regle pour direct mettre la date et l'heure a la date et l'heure 
+    // actuelle dans les champs creer reunion 
     synchro_date(date);
 
     $("#create_creneau").on("click", ()=>{
@@ -112,14 +127,19 @@ $(document).ready(function () {
     function synchro_date(date_actuelle){
         $(".InfoReunion input[type='date']").each(function (){
             if ($(this).attr("traiter") != "true"){
-                $(this).val(date_actuelle.getFullYear()+"-"+add_zero(date_actuelle.getMonth()+1)+"-"+add_zero(date_actuelle.getDate()));
+                $(this).val(date_actuelle.getFullYear()+"-"+
+                    add_zero(date_actuelle.getMonth()+1)+"-"+
+                    add_zero(date_actuelle.getDate()));
+    
                 $(this).attr("traiter", "true");
             }
         });
 
         $(".selectionTime select.minute-reu").each(function (){
             if ($(this).attr("traiter") != "true"){
-                $(this).val(add_zero(date_actuelle.getMinutes() + (5 - (date_actuelle.getMinutes() % 5)))); 
+                $(this).val(add_zero(date_actuelle.getMinutes() + 
+                    (5 - (date_actuelle.getMinutes() % 5)))); 
+
                 $(this).attr("traiter", "true");
             }
         });
@@ -149,5 +169,6 @@ $(document).ready(function () {
 
 function hexToRgb(hex){
     hex = hex.replace("#", "");
-    return parseInt(hex.substring(0,2), 16) + ":" + parseInt(hex.substring(2,4), 16) + ":" + parseInt(hex.substring(4,6), 16);
+    return parseInt(hex.substring(0,2), 16) + ":" + parseInt(
+        hex.substring(2,4), 16) + ":" + parseInt(hex.substring(4,6), 16);
 }

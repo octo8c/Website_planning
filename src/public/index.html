@@ -3,8 +3,13 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <meta name="viewport" 
+        content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link href=
+    "https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" 
+    rel="stylesheet">
+
     <link rel="stylesheet" href="/index.css">
     <link rel="stylesheet" href="/log.css">
     <link rel="stylesheet" href="/calendar.css">
@@ -13,7 +18,9 @@
     <title> First Agenda </title>
     <link rel="icon" href="mp_icon.png" type="image/png">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/\
+1.14.7/umd/popper.min.js"></script>    
+
     <script src="index.js" type="module"></script>
     <script src="log.js" type="module"></script>
     <script src="calendar.js" type="module"></script>
@@ -83,16 +90,14 @@
             <button id="loginButton"> CONNEXION </button>
             <button id="disconnectButton"> DECONNEXION </button>
         </div>
-        <div id="profilDiv" class="offset-md-1 col-md-2">
-            <img src="https://static.vecteezy.com/system/resources/thumbnails/019/879/186/small/user-icon-on-transparent-background-free-png.png" width="50px" height="50px">
-        </div>
     </header>
 
     <!-- POPUP CONNEXION -->
     <div id="popupLogin">
         <div id="not-header">
             <div id="generalContainer">
-                <img id="closeLoginButton" src="closebutton.png" height="50px" width="50px" style="cursor:pointer">
+                <img id="closeLoginButton" src="closebutton.png" height="50px"
+                 width="50px" style="cursor:pointer">
 
                 <div id="containerhead">
                     <h1 id="id_title"> IDENTIFICATION </h1>
@@ -104,20 +109,37 @@
                 </div>
     
                 <div id="Connexion" class="tabcontent">
-                    <input class="log_input" type="text" id="user_log" name="username" placeholder="Username">
-                    <input class="log_input" type="password" id="pass_log" name="password" placeholder="Password" required="true" autocomplete="current-password">
+                    <input class="log_input" type="text" id="user_log" 
+                        name="username" placeholder="Username">
+
+                    <input class="log_input" type="password" id="pass_log" 
+                        name="password" placeholder="Password" required="true" 
+                        autocomplete="current-password">
+
                     <button class="log_button"> Connexion </button>
                     <a href="" id="lostPassword">Mot de passe oubliée</a>
                 </div>
                 <div id="Inscription" class="tabcontent">
-                    <input class="log_input" type="text" id="user_sub" placeholder="Username">
-                    <input class="log_input" type="text" id="mail_sub" placeholder="Email">
-                    <input class="log_input" type="password" id="pass_sub" placeholder="Password" required="true" autocomplete="new-password">
-                    <input class="log_input" type="password" id="check_sub" placeholder="Confirm password" required="true" autocomplete="current-password">
+                    <input class="log_input" type="text" id="user_sub" 
+                        placeholder="Username">
+
+                    <input class="log_input" type="text" id="mail_sub" 
+                        placeholder="Email">
+
+                    <input class="log_input" type="password" id="pass_sub" 
+                        placeholder="Password" required="true" 
+                        autocomplete="new-password">
+
+                    <input class="log_input" type="password" id="check_sub" 
+                        placeholder="Confirm password" required="true" 
+                        autocomplete="current-password">
+
                     <button class="log_button"> Inscription </button>
                 </div>
                 <div id="mdpOublie" class="tabcontent">
-                    <input class="log_input" type="text" id="user_fg" placeholder="Username">
+                    <input class="log_input" type="text" id="user_fg" 
+                        placeholder="Username">
+
                     <button class="log_button"> Demande </button>
                 </div>
             </div>
@@ -127,10 +149,13 @@
 
     <!-- POPUP CREATION REUNION -->
     <div class="InfoReunion">
-        <img id="closeReuButton" src="closebutton.png" height="50px" width="50px" style="cursor:pointer">
+        <img id="closeReuButton" src="closebutton.png" height="50px" 
+            width="50px" style="cursor:pointer">
 
         <input placeholder="Nom de la réunion" id="reunion_name" type="input">
-        <label for="participe"><input type="checkbox" id="participe">Voulez vous participez ?</label>
+        <label for="participe"><input type="checkbox" id="participe">
+            Voulez vous participez ?
+        </label>
         <div id="container_date_heure">
             <div class="date_heure" id="original_creneau">
                 <p class="number_creneau"> Créneau 1 :</p>
@@ -144,7 +169,9 @@
 
         <button id="create_creneau"> AJOUTER UN CRENEAU</button>
 
-        <input type="text" placeholder="Description de la réunion" id="descr_reu">
+        <input type="text" placeholder="Description de la réunion" 
+            id="descr_reu">
+
         <input type="color" id="color_reu">
 
         <button id="create"> CREATION DE LA REUNION </button> 
@@ -171,7 +198,8 @@
                 <li>Samedi</li>
                 <li>Dimanche</li>
             </ul>
-            <ul class="row" id="numero-jour" onmousedown="return false"></ul> <!-- est rempli par le js-->
+            <!-- est rempli par le js-->
+            <ul class="row" id="numero-jour" onmousedown="return false"></ul> 
         </div>
     <!-- Pop up affichage reunion-->
         <div id="voirReunionDiv" class="col-md-3">
@@ -191,7 +219,11 @@
         </div>
         <div id="modal-display-button">
             <button id="modalButton">Fermer</button>
-            <button id="ajouterUtilisateur">Ajouter/Enlevez un utilisateur</button>
+            
+            <button id="ajouterUtilisateur">
+                Ajouter/Enlevez un utilisateur
+            </button>
+            
             <button id="modal-quitter">Quitter la reunion</button>
         </div>
     </div>

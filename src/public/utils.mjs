@@ -1,5 +1,6 @@
 /**
-     * Prends l'username de l'utilisateur et affiche toutes les reunion auquel il vas avoir lieu dans les prochains jours (tries par ordre d'heure)
+     * Prends l'username de l'utilisateur et affiche toutes les reunion auquel 
+     * il vas avoir lieu dans les prochains jours (tries par ordre d'heure)
      */
 export function updateDisplayReunion(mail){
     post_JSON("getReunion", {mail:mail})
@@ -10,7 +11,8 @@ export function updateDisplayReunion(mail){
         $("#Reunion_flex").empty();
         $("#Reunion_invit").empty();
         var date = new Date();
-        var list_date = [];//Liste de liste (chaque liste contient toutes les info de la reunion)
+        //Liste de liste (chaque liste contient toutes les info de la reunion)
+        var list_date = [];
         let ind = 0;
         for(let row of rows){
             if(row.heure_fin.length===1){
@@ -20,13 +22,19 @@ export function updateDisplayReunion(mail){
                 let year = parseInt(date_split[0]);
                 let month = parseInt(date_split[1]);
                 let day = parseInt(date_split[2]);
-                if(year>date.getFullYear()||month>date.getMonth()|| day>date.getDay()||tempsMax>date.getHours()*60+date.getMinutes()){ // Si la date est bien suéperieur 
+                if(year>date.getFullYear()
+                    ||month>date.getMonth()
+                    || day>date.getDay()
+                    || tempsMax>date.getHours()*60+date.getMinutes()){ 
+                    // Si la date est bien suéperieur 
                     list_date.push( [ind,new Date(year,month,day),tempsMax]);
                     ind++;
                 }    
             }else{/*Toutes les reunions qui n'ont pas d'horraires definis */
-                $("#Reunion_flex").append("<a href =\"\"id="+row.id_reunion+" class='nom_reu'>Reunion de +"+row.creator_username+"</a>");
-                $("a#"+row.id_reunion).on('click',function(e){e.preventDefault();viewReunion(getCookie("mail"),row);});
+                $("#Reunion_flex").append("<a href =\"\"id="+row.id_reunion+
+                   " class='nom_reu'>Reunion de +"+row.creator_username+"</a>");
+                $("a#"+row.id_reunion).on('click',function(e){
+                    e.preventDefault();viewReunion(getCookie("mail"),row);});
             }
         }
         /**On trie toutes les dates */
@@ -43,14 +51,28 @@ export function updateDisplayReunion(mail){
                 continue;
             }
             let reunion_name = rows[list_date[i][0]].nom_reunion;
-            reunion_name = reunion_name.substring(0,1).toUpperCase() + reunion_name.substring(1); // pour mettre en maj la premiere lettre
-            $("#Reunion_fix").append("<a class='nom_reu' href =\"\"id="+rows[list_date[i][0]].id_reunion+" >" + reunion_name + " à "+rows[list_date[i][0]].heure[0].substring(0,5)+", le "+rows[list_date[i][0]].date_reunion[0].substring(0,10).replaceAll("-", "/")+". Auteur: "+rows[list_date[i][0]].creator_username+"</a>");
-            $("a#"+rows[list_date[i][0]].id_reunion).on('click',function(e){e.preventDefault();viewReunion(getCookie("mail"),rows[list_date[i][0]]);});
+            // pour mettre en maj la premiere lettre
+            reunion_name = reunion_name.substring(0,1)
+            .toUpperCase() + reunion_name.substring(1); 
+
+            $("#Reunion_fix").append("<a class='nom_reu' href =\"\"id="+
+                rows[list_date[i][0]].id_reunion+" >" + reunion_name + " à "+
+                rows[list_date[i][0]].heure[0].substring(0,5)+", le "+
+                rows[list_date[i][0]].date_reunion[0].substring(0,10)
+                .replaceAll("-", "/")+". Auteur: "+
+                rows[list_date[i][0]].creator_username+"</a>");
+
+            $("a#"+rows[list_date[i][0]].id_reunion).on('click',
+                function(e){e.preventDefault();
+                    viewReunion(getCookie("mail"),rows[list_date[i][0]]);});
         }
 
         for(let row of rows_invit){
-            $("#Reunion_invit").append("<a class='nom_reu' href =\"\"id="+row.id_reunion+" >Reunion de +"+row.creator_username+"</a>");
-            $("a#"+row.id_reunion).on('click',function(e){e.preventDefault();viewInvit(getCookie("mail"),row)});
+            $("#Reunion_invit").append("<a class='nom_reu' href =\"\"id="+
+                row.id_reunion+" >Reunion de +"+row.creator_username+"</a>");
+            $("a#"+row.id_reunion).on('click',function(e){
+                e.preventDefault();viewInvit(getCookie("mail"),row)
+            });
         }
 
     });
@@ -69,13 +91,19 @@ export function viewInvit(mail,row){
         $("#display-info").append("<h3>L'organisateur : "+createur+"<h3>");
         if(row.date_reunion.length === 1){
             $("#display-info").append("<p>"+row.date_reunion[0] +"</p>");
-            $("#display-info").append("<p>Reunion de "+row.heure[0]+" : "+row.heure_fin[0]+" </p>");
+            $("#display-info").append("<p>Reunion de "+row.heure[0]+" : "+
+                row.heure_fin[0]+" </p>");
         }else{
             $("#display-info").append("<p>Horraires possibles : </p>");
             for(let i =0;i<row.date_reunion.length;i++){
-                $("#display-info").append("<button id=invit_"+i+">Le"+row.date_reunion[i]+","+row.heure[i]+"->"+row.heure_fin[i]+"</button>");
+                $("#display-info").append("<button id=invit_"+i+">Le"+
+                    row.date_reunion[i]+","+row.heure[i]+
+                    "->"+row.heure_fin[i]+"</button>");
+
                 $("#invit_"+i).on('click',function(){
-                    post_JSON('updateProposition',{id_reunion:row.id_reunion,date:row.date_reunion[i],heure:row.heure[i],heure_fin:row.heure_fin[i]});
+                    post_JSON('updateProposition',{id_reunion:row.id_reunion,
+                        date:row.date_reunion[i],heure:row.heure[i],
+                        heure_fin:row.heure_fin[i]});
                 });
             }
         }
@@ -93,11 +121,13 @@ export function viewReunion(mail,row){
         $("#display-info").append("<h3><b>"+row.nom_reunion+"</b></h3>");
         if(row.date_reunion.length === 1){
             $("#display-info").append("<p>"+row.date_reunion[0] +"</p>");
-            $("#display-info").append("<p>Reunion de "+row.heure[0]+" : "+row.heure_fin[0]+" </p>");
+            $("#display-info").append("<p>Reunion de "+row.heure[0]+" : "+
+                row.heure_fin[0]+" </p>");
         }else{
             $("#display-info").append("<p>Horraires possibles : </p>");
             for(let i =0;i<row.date_reunion.length;i++){
-                $("#display-info").append("<p>Le"+row.date_reunion[i]+","+row.heure[i]+"->"+row.heure_fin[i]+"</p>");
+                $("#display-info").append("<p>Le"+row.date_reunion[i]+","+
+                    row.heure[i]+"->"+row.heure_fin[i]+"</p>");
             }
         }
         for (let participant of resultats.result.rows){
@@ -107,30 +137,37 @@ export function viewReunion(mail,row){
             }
         }
         participants = participants.substring(1);
-        $("#display-info").append("<p><b>Le créateur de la reunion : "+createur+"</b></p>");
+        $("#display-info").append("<p><b>Le créateur de la reunion : "+
+            createur+"</b></p>");
+
         $("#display-info").append("<p> Les participants :"+participants+"</p>");
 
         $("#popup-overlay").css("display","inline");//On affiche les display
         $("#modal").css("display","inline");
     
-        $("#modalButton").on('click',function(){//Quitte l'affichage sans rien faire
+        //Quitte l'affichage sans rien faire
+        $("#modalButton").on('click', function(){
             $("#display-info").empty();
             $("#popup-overlay").css("display","none");
             $("#modal").css("display","none");
             $("#userType").css("display","inline");
         });
+
         let flag = false;
-        $("#ajouterUtilisateur").on('click',function(){ //Invite les utilisateurs a la reunion
+        //Invite les utilisateurs a la reunion
+        $("#ajouterUtilisateur").on('click',function(){
             if(!flag){
                 $("#userType").css("display","inline");
                 flag = true;
             }else{
-                post_JSON("invit",{username:$("#mail_username").val(),id_reunion:row.id_reunion,nom_reunion:row.nom_reunion})
+                post_JSON("invit",{username:$("#mail_username").val(),
+                    id_reunion:row.id_reunion,nom_reunion:row.nom_reunion})
                 .then(res=>{
                     if(!res.result){
                         errorMessage("display-info","Erreur mail pas envoyez");
                     }else{//On update la liste des participants
-                        console.log("Oui j'ai bien ajouté : "+row.id_reunion+"mail : "+mail);
+                        console.log("Oui j'ai bien ajouté : "+row.id_reunion+
+                            "mail : "+mail);
                         viewReunion(mail,row);
                     }
                 })
@@ -139,7 +176,8 @@ export function viewReunion(mail,row){
         });
     
         $("#conf-quittez").on('click',function(){
-            post_JSON("quittez-reunion", {mail:mail, id_reunion:row.id_reunion, createur:createur})
+            post_JSON("quittez-reunion", {mail:mail, id_reunion:row.id_reunion,
+                createur:createur})
             .then(function(res){      
                 $("#modal-conf").css("display","none");
                 $("#popup-overlay").css("display","none");
@@ -187,7 +225,8 @@ export function errorMessage(zone,text){
 }
 
 export function userMessage(zone, text, color){
-    $(zone).append("<p style='font-size:larger;font-weight:bold; color:"+color+"' id=errorMessage"+id_error+">"+text+"</p>");
+    $(zone).append("<p style='font-size:larger;font-weight:bold; color:"+color+
+        "' id=errorMessage"+id_error+">"+text+"</p>");
     let erreur = id_error;
     id_error++;
     setTimeout(()=>{
@@ -215,7 +254,8 @@ export function updateUser(){
 
 var nbr_event_possible_visuellement = 5;
 
-// Affichage des évènements dans le calendrier, si force=true on skip les vérifications de l'utilisateur 
+// Affichage des évènements dans le calendrier, si force=true on skip les 
+// vérifications de l'utilisateur 
 export async function updateEventInCalendar(force=false){
     if (getCookie("id") == undefined && !force){
         setTimeout(updateEventInCalendar, 10000);
@@ -229,18 +269,35 @@ export async function updateEventInCalendar(force=false){
         let rows = resultat.result.rows;
         for (let row of rows){
             for (let i=0; i<row.date_reunion.length; i++){ 
-                let date = new Date(row.date_reunion[i].substring(0,10).replaceAll("-",","));
-                date.setDate(date.getDate()+1) // je ne sais pas pourquoi la base de donnée renvoie une date avec le jour -1
+                let date = new Date(row.date_reunion[i].substring(0,10)
+                    .replaceAll("-",","));
+                date.setDate(date.getDate()+1);
 
-                let borne_min = new Date(new Number($(".agenda-case").first().attr("id")));
-                let borne_max = new Date(new Number($(".agenda-case").last().attr("id")));
+                let borne_min = new Date(new Number($(".agenda-case").first()
+                    .attr("id")));
+
+                let borne_max = new Date(new Number($(".agenda-case").last()
+                    .attr("id")));
 
                 if (date >= borne_min && date <= borne_max){
                     let calendar_case = $("#"+date.getTime());
-                    if (calendar_case.find(".event").length <= nbr_event_possible_visuellement){
-                        let luminescance = 0.299 * row.red + 0.587 * row.green + 0.114 * row.blue;
-                        calendar_case.find(".event").append("<a href='' id='reu-n"+ row.id_reunion + "h" + row.heure[i].replaceAll(":","W") + "' class='event_unit' style='color:"+ (luminescance > 128 ? "black" : "white") +";background-color:rgb("+row.red+","+row.green+","+row.blue+")'>"+ row.nom_reunion +"</a>");
-                        $("#reu-n"+row.id_reunion+"h"+row.heure[i].replaceAll(":","W")).on("click", function() {
+                    if (calendar_case.find(".event").length <= 
+                        nbr_event_possible_visuellement){
+
+                        let luminescance = 0.299 * row.red + 0.587 * row.green +
+                             0.114 * row.blue;
+
+                        calendar_case.find(".event").append
+                            ("<a href='' id='reu-n"+ row.id_reunion + "h" + 
+                            row.heure[i].replaceAll(":","W") + 
+                            "' class='event_unit' style='color:"+ 
+                            (luminescance > 128 ? "black" : "white") +
+                            ";background-color:rgb("+row.red+","+row.green+","+
+                            row.blue+")'>"+ row.nom_reunion +"</a>");
+
+                        $("#reu-n"+row.id_reunion+"h"+row.heure[i].
+                            replaceAll(":","W")).on("click", function() {
+
                             console.log($(this));
                             viewReunion(getCookie("mail"), row);
                             return false; // empeche la redirection du lien

@@ -3,7 +3,8 @@
 
 <head>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/\
+        popper.min.js"></script>
 </head>
 
 <body>
@@ -16,8 +17,10 @@
         <h3>Horraires possible</h3>
         <%for (let i=0;i<cons.heure.length;i++){ %>
             <button id="bouton<%=i%>" 
-            onclick="handleClick(<%=i%>)">
-            <%=cons.date_reunion[i]%> <%=cons.heure[i] %>:<%=cons.heure_fin[i]%></button>
+                onclick="handleClick(<%=i%>)">
+                <%=cons.date_reunion[i]%> 
+                <%=cons.heure[i] %>:<%=cons.heure_fin[i]%>
+            </button>
          <% } %>
     </div>
     <p>
@@ -60,10 +63,12 @@
                 }).then(result => {
                     if (result.ok) {
                         $("body").empty();
-                        $("body").append("<h1>Votre reponse a bien été enregistré</h1>");
+                        $("body").append("<h1>Votre reponse a bien été \
+                            enregistré</h1>");
                     }else{
                         $("body").empty();
-                        $("body").append("<h1>Erreur votre requete a eu un probleme</h1>");
+                        $("body").append("<h1>Erreur votre requete a eu un \
+                            probleme</h1>");
                     }
                 });
             });

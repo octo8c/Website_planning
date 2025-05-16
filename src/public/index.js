@@ -1,4 +1,5 @@
-import { getCookie, post_JSON, removeCookie, updateEventInCalendar, updateUser } from "./utils.mjs";
+import {getCookie, post_JSON, removeCookie, updateEventInCalendar, updateUser}
+ from "./utils.mjs";
 
 $(document).ready(function(){
 
@@ -16,10 +17,12 @@ $(document).ready(function(){
 
     function construct_date(date){
         var date_separated = date.substring(0,8);
-        return date_separated.substring(0,4)+"-"+date_separated.substring(4,6)+"-"+date_separated.substring(6,8);
+        return date_separated.substring(0,4)+"-"
+        +date_separated.substring(4,6)+"-"+date_separated.substring(6,8);
     }
     /**
-     * Prends un temps d'un calendrier ics et le transforme en temps pour la base de données
+     * Prends un temps d'un calendrier ics et le transforme en 
+     * temps pour la base de données
      * @param {*} time Au format [1-9]*T
      * Renvoie le temps au bon format pour la base de données
      */
@@ -59,7 +62,7 @@ $(document).ready(function(){
                 }else if (element.substring(0,9)==="LOCATION:"){
                     tab[7] = element.split(":")[1];
                 }else if (element.substring(0,9)==="ORGANIZER"){
-                    tab[6]=element.split("CN=")[1].split(":")[0];//On suppose qu'on 
+                    tab[6]=element.split("CN=")[1].split(":")[0]; 
                 }else if (element.substring(0,9)==="ATTENDEE;"){
                     attendees[ind] =element.split("MAILTO:")[1];
                     ind++;
@@ -77,7 +80,8 @@ $(document).ready(function(){
                         })
                         .then(function(res){
                             if(!res.result){
-                                errorMessage("#InfoReunion","Erreur fichier au mauvais format");
+                                errorMessage("#InfoReunion",
+                                    "Erreur fichier au mauvais format");
                             }else{
                                 updateEventInCalendar(true);
                             }
@@ -92,7 +96,8 @@ $(document).ready(function(){
     });
 
 
-    // regle pour ajouter un input de selection d'heure et de minute personnalisé dès le début de la page ! A GARDER
+    // regle pour ajouter un input de selection d'heure et de minute 
+    // personnalisé dès le début de la page ! A GARDER
     $(".selectionTime").append($("#selection-heure-reu").html());
     // on enleve le hidden
     $(".selectionTime").css("display : block");

@@ -4,16 +4,27 @@ import { updateEventInCalendar } from "./utils.mjs";
 $(document).ready(function(){
     $(window).on("resize", () => {
         if ($(window).width() < 800) {
-            $(".jour-agenda").html("<li>Lun</li><li>Mar</li><li>Mer</li><li>Jeu</li><li>Ven</li><li>Sam</li><li>Dim</li>");
+            $(".jour-agenda").html("<li>Lun</li><li>Mar</li><li>Mer</li><li>Jeu\
+                </li><li>Ven</li><li>Sam</li><li>Dim</li>");
         } else {
-            $(".jour-agenda").html("<li>Lundi</li><li>Mardi</li><li>Mercredi</li><li>Jeudi</li><li>Vendredi</li><li>Samedi</li><li>Dimanche</li>");
+            $(".jour-agenda").html("<li>Lundi</li>\
+                <li>Mardi</li>\
+                <li>Mercredi\
+                </li><li>Jeudi</li>\
+                <li>Vendredi</li>\
+                <li>Samedi</li>\
+                <li>Dimanche</li>");
         }
     });
 
-    $(window).trigger("resize");  // pour permettre aux écran nativement petit, et non redimensionné d'avoir les petite écritures
+    // pour permettre aux écran nativement petit, et non redimensionné 
+    // d'avoir les petite écritures
+    $(window).trigger("resize");  
 
-    var real_date = new Date(); real_date.setHours(0, 0, 0, 0)
-    var date = new Date(real_date.getTime()); // date étant modifiée quand l'user passe au mois d'apres ou d'avant
+    var real_date = new Date(); 
+    real_date.setHours(0, 0, 0, 0);
+     // date étant modifiée quand l'user passe au mois d'apres ou d'avant
+    var date = new Date(real_date.getTime());
 
     updateCalendar(date, real_date);
 
@@ -33,7 +44,8 @@ $(document).ready(function(){
         updateCalendar(date, real_date);
     });
 
-    $(".agenda-case").hover(function () {$(this).addClass("selected");}, function () {$(this).removeClass("selected");});
+    $(".agenda-case").hover(function () {$(this).addClass("selected");}, 
+        function () {$(this).removeClass("selected");});
 
     function month_to_string(x){
         switch (x){
@@ -52,32 +64,47 @@ $(document).ready(function(){
         }
     }
 
-    function construct_days(date){  // first day of the week must have to be the number of the monday from the first week of the month
+    // first day of the week must have to be the number of the monday 
+    // from the first week of the month
+    function construct_days(date){  
         $("#numero-jour").html("");
 
 
-        let value_of_first_day = first_day_of_the_first_week(date.getFullYear(), date.getMonth());
+        let value_of_first_day = first_day_of_the_first_week(date.getFullYear(),
+            date.getMonth());
         let temp_d = new Date(date);
-        temp_d.setDate(value_of_first_day - last_day_in_month(date.getFullYear(), date.getMonth()-1));
+        temp_d.setDate(value_of_first_day - 
+            last_day_in_month(date.getFullYear(), date.getMonth()-1));
 
         if (value_of_first_day != 1){   
-            for (let i=value_of_first_day; i<=last_day_in_month(date.getFullYear(), date.getMonth()-1); i++){ // start of the week from potentially the previous month
-                $("#numero-jour").append("<li class='disabled agenda-case' id='"+ temp_d.getTime() +"'>"+ i +"<div class='event'> </div> </li>");
+            // start of the week from potentially the previous month
+            for (let i=value_of_first_day; i<=last_day_in_month(
+                date.getFullYear(), date.getMonth()-1); i++){ 
+                $("#numero-jour").append("<li class='disabled agenda-case' id='"
+                    + temp_d.getTime() +"'>"+ i +
+                    "<div class='event'> </div> </li>");
+
                 temp_d.setDate(temp_d.getDate()+1);
             }
         }
         
         temp_d = new Date(date);
-        for (let i=1; i<=last_day_in_month(date.getFullYear(), date.getMonth()); i++){
+        for (let i=1; i<=last_day_in_month(date.getFullYear(), 
+            date.getMonth()); i++){
+                
             temp_d.setDate(i);
-            $("#numero-jour").append("<li class='agenda-case' id='"+ temp_d.getTime() +"'>"+i+"<div class='event'> </div> </li>");
+            $("#numero-jour").append("<li class='agenda-case' id='"+ 
+                temp_d.getTime() +"'>"+i+"<div class='event'> </div> </li>");
         }
 
         let indice_jour=1;
         let totalDays = $("#numero-jour li").length;
         temp_d.setDate(temp_d.getDate()+1);
         while (totalDays % 7 !== 0) {
-            $("#numero-jour").append('<li class="disabled agenda-case" id="'+ temp_d.getTime() +'">'+indice_jour+" <div class='event'> </div> </li>");
+            $("#numero-jour").append('<li class="disabled agenda-case" id="'+ 
+                temp_d.getTime() +'">'+indice_jour+
+                " <div class='event'> </div> </li>");
+                
             temp_d.setDate(temp_d.getDate()+1);
             indice_jour++;
             totalDays++;
@@ -102,9 +129,12 @@ $(document).ready(function(){
 
 
     function updateCalendar(date, real_date){
-        $("#monthYear").html(month_to_string(date.getMonth()) + " " + date.getFullYear());
+        $("#monthYear").html(month_to_string(date.getMonth()) + " " + 
+            date.getFullYear());
+
         construct_days(date);
-        $(".agenda-case").hover(function () {$(this).addClass("selected");}, function () {$(this).removeClass("selected");});
+        $(".agenda-case").hover(function () {$(this).addClass("selected");}, 
+            function () {$(this).removeClass("selected");});
         
         if (date.getMonth() == real_date.getMonth()) {
             $(".agenda-case").not(".disabled").filter(function () {
@@ -116,8 +146,10 @@ $(document).ready(function(){
         $(".agenda-case").on("dblclick", function () {
             let t_date = new Date(new Number($(this).attr("id")));
 
-            $("#Create_reunion").trigger("click"); // on trigger l'evenement création réunion
-            $("#original_creneau .date_reunion").val(t_date.getFullYear()+"-"+add_zero(t_date.getMonth()+1)+"-"+add_zero(t_date.getDate()))
+            // on trigger l'evenement création réunion
+            $("#Create_reunion").trigger("click"); 
+            $("#original_creneau .date_reunion").val(t_date.getFullYear()+"-"+
+                add_zero(t_date.getMonth()+1)+"-"+add_zero(t_date.getDate()));
         });
         updateEventInCalendar(true);
     }
@@ -129,7 +161,9 @@ $(document).ready(function(){
 
 /**
  * 
- * @param {*} date determine if we have to add a zero to correctly print the value
+ * @param {*} date determine if we have to add a zero to correctly print the 
+ * value
+ * 
  * @returns the value with or without a zero
  */
 function add_zero(date){
