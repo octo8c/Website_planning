@@ -14,7 +14,10 @@ app.use(express.json());
 app.set("view engine","ejs");
 app.set('views',path.join(__dirname,'views'));
 
-var operation_reunion = 0; // sera incrémenter à chaque opération faites sur les réunions EST TRES IMPORTANT POUR ECONOMISER LES REQUETES A LA BDD 
+if (process.env.INITIALISED == "false"){
+    console.log("erreur, le fichier .env n'est pas rempli, veuillez entrer la commande '/make' pour le re-remplir");
+    exit(0);
+}
  
 
  
@@ -301,7 +304,6 @@ async function resInvit(reponse,mail,id_reunion,horraire){
     if(reponse){
         client.query("insert into participe values($1,$2,0)",[id_reunion,mail,horraire]); 
     }
-    operation_reunion++;
 }
 /**
  * Verifie que l'utilisateur a bien été invité a la reunion id_reunion
@@ -390,7 +392,6 @@ app.post('/getInfo',(req,res)=>{ //En gros envoyez via res.json toutes les reuni
 });
 
 app.post('/quittez-reunion',(req,res)=>{
-    operation_reunion++;    
     supParticipation(req.body.mail,req.body.id_reunion,req.body.createur);
     res.json({result: true});//On envoie pour confirmer ca a bien été enregistré
 });
