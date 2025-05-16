@@ -41,10 +41,12 @@ $(document).ready(function(){
 
     $("#Connexion .log_button").on('click',function(e){
         e.preventDefault();
+        console.log("Oui j'appuye sur le bouton");
         if(checkInput(to_check_log)){
             let usern = $("#user_log").val().trim()
             post_JSON("login", {username: usern, password: $("#pass_log").val().trim()})
             .then(function (res){
+                console.log("Oui je fais bien les executions de log");
                 if (res.connecte){
                     setCookie("id", res.id);
                     setCookie("username", usern);

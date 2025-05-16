@@ -73,7 +73,8 @@ $(document).ready(function(){
                             nom_reunion : tab[4] ,
                             descr : tab[5] , 
                             organisateur : tab[6] ,
-                            invites : attendees
+                            invites : attendees , 
+                            mail : getCookie("mail")
                         })
                         .then(function(res){
                             if(!res.result){
@@ -83,8 +84,6 @@ $(document).ready(function(){
                             }
                         });
                     }
-                }else{
-                    /*On fait rien avec tout ca donc on s'en fous*/
                 }
         });
         }
