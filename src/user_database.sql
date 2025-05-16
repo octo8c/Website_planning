@@ -4,6 +4,7 @@ drop table if exists participe cascade;
 drop table if exists invite cascade ;
 drop table if exists fpass cascade;
 drop table if exists tmp_res cascade;
+drop table if exists personnal_event;
 create table utilisateur (
     username varchar(30) unique,
     mail varchar(100) not null unique ,
@@ -32,12 +33,12 @@ create table personnal_event(
     red smallint,
     blue smallint, 
     green smallint,
-    heure time[] not null,
+    heure time not null,
     creator_username varchar(30) not null,
-    date_reunion date[] not null,
-    heure_fin time[] not null,
+    date_event date not null,
+    heure_fin time not null,
     id_event serial primary key,
-    foreign key (creator_username) references utilisateur(username) on update cascade on delete cascade
+    user_mail varchar(100) not null
 );
 
 create table participe (

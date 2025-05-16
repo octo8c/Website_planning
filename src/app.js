@@ -133,48 +133,12 @@ async function getReunion(mail) {
         + " where participe.mail=$1";
     let res = await client.query(requete, [mail]);
     let res_invit = await client.query("select reunion.* from reunion join invite on invite.id_reunion=reunion.id_reunion where invite.mail=$1", [mail]);
+    let res_personnal = await client.query("select * from personnal_event where user_mail=$1 ",[mail]);
     client.release();
-    return [res, res_invit];
+    console.log(res_personnal);
+    return [res, res_invit,res_personnal];
 }
 
-
-
-/**
- * Verifie si la reunion peut bien etre ajouté
- * @param {*} username 
- * @param {*} date 
- * @param {*} heure 
- * @param {*} heure_fin 
- * @returns 
- */
-async function checkReunion(mail, creneau_list) {
-    const client = await pool.connect();
-    let list_result = [];
-    for (let ind = 0; ind < creneau_list.length; ind++) {
-        let res = await client.query("select reunion.heure_fin , reunion.heure from reunion join participe on participe.id_reunion = reunion.id_reunion where participe.mail=$1 and reunion.date_reunion=$2", [mail, [creneau_list[ind][0].d]]);
-        var heure = creneau_list[ind][0];
-        var heure_fin = creneau_list[ind][1];
-        var heureMin = parseInt(heure.h) * 60 + parseInt(heure.m);
-        var heureMax = parseInt(heure_fin.h) * 60 + parseInt(heure_fin.m);
-        var flag = true;
-        console.log("Heure reunion :" + heureMin + "le temps max " + heureMax);
-        for (let row of res.rows) {
-            let tmpTab = row.heure;
-            let tmpTabFin = row.heure_fin;
-            let tmpMin = parseInt(tmpTab.h) * 60 + parseInt(tmpTab.m);
-            let tmpMax = parseInt(tmpTabFin.h) * 60 + parseInt(tmpTab.m);
-            if ((tmpMin < heureMin && tmpMax < heureMin) || (tmpMax > heureMax && tmpMin > heureMax) ||
-                (heureMin < tmpMin && heureMax < tmpMin) || (heureMax > tmpMax && heureMin > tmpMax)) {
-                continue;
-            }
-            flag = false;
-            break;
-        }
-        list_result.push(flag);
-    }
-    client.release();
-    return list_result;
-}
 /**
  * Envoie a tout les utilisateur qui ont passe un certain delai un mail de relance
  */
@@ -272,21 +236,7 @@ async function send_mail(from,to,subject,text){
         return;
     }
 }
-async function reunion(id_reunion) {
-    console.log("L'id _reunion" + id_reunion);
-    const client = await pool.connect();
-    let res = await client.query("select * from reunion where id_reunion=$1", [id_reunion]);
-    console.log("Le resultats de la requete" + res.rows);
-    client.release();
-    return res;
-}
 
-async function check_new_mdp(username) {
-    const client = await pool.connect();
-    let res = client.query("select * from fpass where username=$1", [mail]);
-    client.release();
-    return res.rows[0] != undefined;
-}
 
 async function getUser(username) {
     const client = await pool.connect();
@@ -299,8 +249,9 @@ async function getUser(username) {
  * @param {*} req 
  */
 async function importPersonnal_event(req) {
-    requete("insert into personnal_event(nom_reunion,descr,heure,creator_username,date_reunion,heure_fin) values ($1,$2,$3,$4,$5,$6)",
-        [req.body.nom_reunion,req.body.descr,req.body.heure_debut,req.body.organisateur,req.body.date_debut,req.body.heure_fin]);
+    requete("insert into personnal_event(nom_event,descr,heure,creator_username,date_event,heure_fin,user_mail) values ($1,$2,$3,$4,$5,$6,$7)",
+        [req.body.nom_reunion,req.body.descr,req.body.heure_debut,req.body.organisateur,req.body.date_debut,req.body.heure_fin,req.body.mail])
+    .catch(err=>console.log(err));
     return 0; 
 }
 /**
@@ -365,7 +316,7 @@ app.post("/login", (req, res) => {
     operations(req.body.username, req.body.password, req.body.mail, 0)
         .then(resultats => {
             if (resultats > 0) {
-                getInfoUser(resultats).then(result => {
+                requete("select * from utilisateur where id=$1",[resultats]).then(result => {
                     res.json({ connecte: true, message: "connecté!", id: resultats, mail: result.mail });
                 }
                 );
@@ -405,13 +356,14 @@ app.post('/creation', async (req, res) => {
 
 app.post('/getReunion', (req, res) => {
     getReunion(req.body.mail)
-        .then(result => res.json({ result: result[0], result_invit: result[1] }))
+        .then(result => res.json({ result: result[0], result_invit: result[1] , res_personnal : result[2] }))
         .catch(error => { console.log("Erreur ..." + error); res.json({ result: "Erreur de mail" }); });
 });
 app.post('/getInfo', (req, res) => { //En gros envoyez via res.json toutes les reunion auquels l'utilisateur peut accepter de participer
-    getInfoReunion(req.body.id_reunion)
+    requete("select role_reunion,mail from participe where id_reunion=$1",[req.body.id_reunion])
         .then(result => res.json({ result: result }))
         .catch(err => { res.json({ result: err }); console.log(err.stack); });
+    
 });
 
 app.post('/quittez-reunion', (req, res) => {
@@ -439,7 +391,6 @@ app.post('/horraireReunion', (req, res) => {
 });
 
 app.post('/resultInvit', (req, res) => {
-    //TODO ajoutez le choix d'horraires 
     resInvit(req.body.reponse, req.body.mail, req.body.id_reunion, req.body.horraire)
         .then(result => res.json({ ok: true }))
         .catch(err => { console.log(err); res.json({ ok: false }) });
@@ -448,7 +399,6 @@ app.post('/resultInvit', (req, res) => {
  * Renvoie les info de l'utilisateur
  */
 app.post('/infoUser', (req, res) => {
-    console.log("Coucou tu a bien demandé les infos");
     getInfoUser(req.body.id)
         .then(result => { console.log(result); res.json({ result: result }); })
         .catch(err => { console.log(err); res.json({ result: undefined }) });
@@ -461,8 +411,8 @@ app.post('/importReunion', (req, res) => {
 });
 
 app.get('/invit/:index/:mail', (req, res) => {//L'id de la reunion 
-    checkInvit(req.params.index, req.params.mail).then(result => {
-        if (result) {
+    requete("select * from invite where id_reunion=$1 and mail=$2",[req.params.index, req.params.mail]).then(result => {
+        if (result[0]!=undefined) {
             requete("select * from reunion where id_reunion=$1",[req.params.index]).then(result => {
                 res.render("invit", { cons: result.rows[0] });
             });

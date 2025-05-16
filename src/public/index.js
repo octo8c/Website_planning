@@ -73,7 +73,8 @@ $(document).ready(function(){
                             nom_reunion : tab[4] ,
                             descr : tab[5] , 
                             organisateur : tab[6] ,
-                            invites : attendees
+                            invites : attendees , 
+                            mail : getCookie("mail")
                         })
                         .then(function(res){
                             if(!res.result){
