@@ -1,0 +1,124 @@
+#logbody {
+    backdrop-filter: blur(10px);
+}
+
+.log_input {
+    width: 30dvw;
+    padding: 10px;
+    margin-bottom: 10px !important;
+    box-sizing: border-box;
+    border-radius: 5px;
+    background-color: rgb(233, 245, 255);
+}
+
+#logo {
+    width: 225px;
+    height: auto;
+}
+
+#not-header{
+    margin-top: 10dvh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#generalContainer {
+    display: flex;
+    position: relative;
+    background-color: #999999;
+    border-radius: 10px;
+    width: max-content;
+    height: max-content;
+    flex-direction: column;
+    justify-content: center;
+    padding: 3% 10%;
+    gap: 20px;
+} 
+
+.tabcontent{
+    display: flex;
+    flex-direction: column;
+    visibility:hidden;
+    width: max-content;
+    height: max-content;
+    align-self: center;
+}
+
+#tabs {
+    align-self: center;
+    width: max-content;
+}
+
+a#lostPassword{
+    color: blue;
+}
+
+#containerhead {
+    margin-bottom: 20px;
+    align-self: center;
+}
+
+.log_selected {
+    background-color: #1f5f85 !important;
+}
+
+.log_button{
+    margin-top : 10px;
+    padding : 10px 0px;
+    border-color:#6c8da4;
+    border-radius: 5px;
+    background-color:#6c8da4;
+    color:white;
+    font-weight: bold;
+}
+.log_button:hover{
+    background-color: #618096;
+}
+
+/* Même règle que dans calendar.css pour les boutons, on respecte une estétique globale */
+.tablinks, header button {
+    padding: 8px 16px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 6px !important;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+
+.tablinks:hover, header button:hover {
+    background-color: #2980b9;
+}
+
+.tablinks {
+    width: 10dvw;
+    height: 5dvh;
+    margin: 10px;
+    padding:0px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+@media screen and (max-height: 600px) {
+    .tablinks{
+        height:auto;
+        padding: 8px 16px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    #log_input {
+        width: 70dvw;
+    }
+
+    #not-header {
+        margin-top : 3dvh;
+    }
+
+    .tablinks{
+        width:30dvw;
+    }
+}

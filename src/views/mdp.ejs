@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    </head>
+    <body>
+        <h2>
+            Bonjour , <%=send%> vous avez perdu votre mot de passe ? 
+        </h2>
+        <label for="new_mdp"><input type="text" id="new_mdp"></label>
+        <button id="submit_newmdp">Reinitialisez le mot de passe</button>
+        <script>//Envoie le nouveau mdp au serveur
+            $(document).ready(function(){
+                $("#submit_newmdp").on('click',function(){
+                    console.log("Oui ces bien clique");
+                    $.post('http://localhost:8080/newmdp',{password:$("#new_mdp").val(),username:$(location).attr('href').split('/')[4]})
+                    .then(result=>{
+                        if(result.ok){
+                            $("body").empty();
+                            $("body").append("<h1>Nouveau mot de passe enregsitré</h1>");
+                        }else{
+                            $("<h1>"+result.message+"</h1>");
+                        }
+                    });
+                });
+            });
+        </script>
+    </body>
+</html>

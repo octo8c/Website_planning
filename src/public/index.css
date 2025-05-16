@@ -1,0 +1,208 @@
+/* ------------ règle générale ------------ */
+#mybody {
+    background-color: #f4f6f7;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 20px;
+}
+
+header.row {
+    border: solid 2px #ccc !important;
+    border-radius: 6px;
+    margin : 1px 0px !important;
+    align-items: center;
+}
+
+header div {
+    margin : 1% 0px;
+}
+
+html {
+    color : blue;
+}
+
+.fate-out{
+    transition: opacity 1s ease-out;
+    opacity: 0;
+}
+button {
+    padding: 8px 16px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+button:hover {
+    background-color: #2980b9;
+    cursor: pointer;
+}
+
+
+#logo {
+    width: 225px;
+    height: auto;
+}
+
+.popup-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+.modal {
+    display: none;
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    z-index: 1000;
+    max-width: 100%;
+    width: 400px;
+}
+
+#userType{
+    display: none;
+}
+#fileImport{
+    display: none;
+}
+
+#Create_reunion{
+    visibility:hidden;
+}
+
+
+/* ------------ règle de l'agenda ------------ */
+
+.agenda-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-bottom: 10px;
+}
+#numero-jour li {
+    border-radius: 6px;
+    background-color: #ffffff;
+}
+.disabled {
+    background-color: #D3D3D3 !important;
+}
+.selected {
+    background-color: #dde3ea !important;
+}
+.today {
+    background-color: #4e85dd !important;
+}
+#agendaDiv {
+    border: 2px solid #ccc;
+    background-color: #fdfefe;
+    padding: 15px;
+    border-radius: 6px;
+}
+.agenda-case {
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+/*concerne a la fois les li de jour agenda et ceux de numero-jour*/
+.row li{
+    width:14%;
+    margin-left: 1px;
+    text-align: center;
+    align-self: center;
+}
+ul.row {
+    list-style: none;
+    padding-left: 0px;
+}
+
+
+.jour-agenda {
+    background-color: #ecf0f1;
+    padding: 10px 0px;
+    border-bottom: 1px solid #ccc;
+    font-weight: bold;
+}
+.jour-agenda li {
+    background: transparent;
+    padding: 8px 0px !important;
+    color: #2c3e50;
+}
+
+
+/* -- règle des bouttons de l'agenda -- */
+#prevMonth, #nextMonth, #monthYear{
+    margin : 0px 15px;
+}
+#prevMonth, #nextMonth {
+    aspect-ratio: 1 / 1;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    font-size: larger;
+    line-height: 40px; /* Aligne verticalement */
+    text-align: center;
+    border-radius: 50%;
+    background-color: #85c1e9;
+    color: #2c3e50;
+    display: inline-block;
+}
+.jour-agenda{
+    text-align: center;
+}
+#prevMonth:hover, #nextMonth:hover {
+    background-color: #5dade2;
+}
+
+#profilDiv{
+    display: none;
+}
+
+#disconnectButton{
+    display: none;
+}
+
+/* ------------ règle temporaire ------------ */
+#voirReunionDiv {
+    border : 2px solid #ccc;
+    border-radius: 6px;
+}
+
+
+
+
+/* ------------ règle responsive ------------ */
+@media (max-width: 768px) { 
+    #monthYear{
+        font-size: medium;
+    }
+
+    #logo {
+        height: 50px;
+        width: auto;
+    }
+}
+
+@media (min-width: 350px) {
+    #prevMonth {
+        margin-right: 0px;
+    }
+    #nextMonth {
+        margin-left:0px;
+    }
+    .jour-agenda {
+        font-size: medium;
+    }
+    .row li {
+        width: 13%;
+    }
+}
+
+

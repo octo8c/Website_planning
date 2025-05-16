@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/index.css">
+    <link rel="stylesheet" href="/log.css">
+    <link rel="stylesheet" href="/calendar.css">
+    <link rel="stylesheet" href="/popup.css">
+    <link rel="stylesheet" href="reunion.css">
+    <title> First Agenda </title>
+    <link rel="icon" href="mp_icon.png" type="image/png">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>    
+    <script src="index.js" type="module"></script>
+    <script src="log.js" type="module"></script>
+    <script src="calendar.js" type="module"></script>
+    <script src="reunion.mjs" type="module"></script>
+    <script src="utils.mjs" type="module"></script>
+</head>
+
+
+<!-- DOIT RESTER HIDDEN, EST AJOUTé PAR UN SCRIPT JS-->
+<div id="selection-heure-reu" class="selection_temps">
+    <!-- Pour les selection d'heure -->
+    <select class="heure-reu" hidden>
+        <option value="00"> 00 </option>
+        <option value="01"> 01 </option>
+        <option value="02"> 02 </option>
+        <option value="03"> 03 </option>
+        <option value="04"> 04 </option>
+        <option value="05"> 05 </option>
+        <option value="06"> 06 </option>
+        <option value="07"> 07 </option>
+        <option value="08"> 08 </option>
+        <option value="09"> 09 </option>
+        <option value="10"> 10 </option>
+        <option value="11"> 11 </option>
+        <option value="12"> 12 </option>
+        <option value="13"> 13 </option>
+        <option value="14"> 14 </option>
+        <option value="15"> 15 </option>
+        <option value="16"> 16 </option>
+        <option value="17"> 17 </option>
+        <option value="18"> 18 </option>
+        <option value="19"> 19 </option>
+        <option value="20"> 20 </option>
+        <option value="21"> 21 </option>
+        <option value="22"> 22 </option>
+        <option value="23"> 23 </option>
+    </select>
+    <input disabled class="separateur" value=":" style="width: 10px;" hidden>
+    <select class="minute-reu" hidden>
+        <option value="00"> 00 </option>
+        <option value="05"> 05 </option>
+        <option value="10"> 10 </option>
+        <option value="15"> 15 </option>
+        <option value="20"> 20 </option>
+        <option value="25"> 25 </option>
+        <option value="30"> 30 </option>
+        <option value="35"> 35 </option>
+        <option value="40"> 40 </option>
+        <option value="45"> 45 </option>
+        <option value="50"> 50 </option>
+        <option value="55"> 55 </option>
+    </select>
+</div>
+
+<body id="mybody">
+    <!-- HEADER -->
+    <header class="row">
+        <div id="otherDiv" class="col-md-6">
+            <a href="index.html"> <img id="logo" src="mp_logo.png"> </a>
+        </div>
+
+        <div id="creerReunionDiv" class="col-md-2">
+            <button id="Create_reunion"> CREER UNE REUNION </button>
+        </div>
+
+        <div id="connexionDiv" class="offset-md-1 col-md-2">
+            <button id="loginButton"> CONNEXION </button>
+            <button id="disconnectButton"> DECONNEXION </button>
+        </div>
+        <div id="profilDiv" class="offset-md-1 col-md-2">
+            <img src="https://static.vecteezy.com/system/resources/thumbnails/019/879/186/small/user-icon-on-transparent-background-free-png.png" width="50px" height="50px">
+        </div>
+    </header>
+
+    <!-- POPUP CONNEXION -->
+    <div id="popupLogin">
+        <div id="not-header">
+            <div id="generalContainer">
+                <img id="closeLoginButton" src="closebutton.png" height="50px" width="50px" style="cursor:pointer">
+
+                <div id="containerhead">
+                    <h1 id="id_title"> IDENTIFICATION </h1>
+                </div>
+    
+                <div id="tabs">
+                    <button class="tablinks" id="inscr">Inscription</button>
+                    <button class="tablinks" id="conex">Connexion</button>
+                </div>
+    
+                <div id="Connexion" class="tabcontent">
+                    <input class="log_input" type="text" id="user_log" name="username" placeholder="Username">
+                    <input class="log_input" type="password" id="pass_log" name="password" placeholder="Password" required="true" autocomplete="current-password">
+                    <button class="log_button"> Connexion </button>
+                    <a href="" id="lostPassword">Mot de passe oubliée</a>
+                </div>
+                <div id="Inscription" class="tabcontent">
+                    <input class="log_input" type="text" id="user_sub" placeholder="Username">
+                    <input class="log_input" type="text" id="mail_sub" placeholder="Email">
+                    <input class="log_input" type="password" id="pass_sub" placeholder="Password" required="true" autocomplete="new-password">
+                    <input class="log_input" type="password" id="check_sub" placeholder="Confirm password" required="true" autocomplete="current-password">
+                    <button class="log_button"> Inscription </button>
+                </div>
+                <div id="mdpOublie" class="tabcontent">
+                    <input class="log_input" type="text" id="user_fg" placeholder="Username/mail">
+                    <button class="log_button"> Demande </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- POPUP CREATION REUNION -->
+    <div class="InfoReunion">
+        <img id="closeReuButton" src="closebutton.png" height="50px" width="50px" style="cursor:pointer">
+
+        <input placeholder="Nom de la réunion" id="reunion_name" type="input">
+        <label for="participe"><input type="checkbox" id="participe">Voulez vous participez ?</label>
+        <div id="container_date_heure">
+            <div class="date_heure" id="original_creneau">
+                <p class="number_creneau"> Créneau 1 :</p>
+                <input class="date_reunion" type="date">
+                <div class="selectionTime" class="heure_reunion"></div> 
+                <input class="separateur" disabled value="-"> 
+                <div class="selectionTime" class="heure_fin_reunion"></div>
+                <button class="remove_creneau"> RETIRER LE CRENEAU </button>
+            </div>
+        </div>
+
+        <button id="create_creneau"> AJOUTER UN CRENEAU</button>
+
+        <input type="text" placeholder="Description de la réunion" id="descr_reu">
+        <input type="color" id="color_reu">
+
+        <button id="create"> CREATION DE LA REUNION </button> 
+    </div>
+
+    <!-- AGENDA -->
+    <div id="containerDiv" class="row no-gutters">
+        <div id="agendaDiv" class="col-md-9">
+            <div class="agenda-header">
+                <button id="selectFile">Importez vos reunion</button>
+                <input type="file" id="fileImport" accept=".ics">
+                <button id="prevMonth">❮</button>
+                <h2 id="monthYear">Avril 2025</h2>
+                <button id="nextMonth">❯</button>
+                <button id="today"> Aujourd'hui </button>
+            </div>
+
+            <ul class="jour-agenda row" id="nom-jour">
+                <li>Lundi</li>
+                <li>Mardi</li>
+                <li>Mercredi</li>
+                <li>Jeudi</li>
+                <li>Vendredi</li>
+                <li>Samedi</li>
+                <li>Dimanche</li>
+            </ul>
+            <ul class="row" id="numero-jour" onmousedown="return false"></ul> <!-- est rempli par le js-->
+        </div>
+    <!-- Pop up affichage reunion-->
+        <div id="voirReunionDiv" class="col-md-3">
+            <h2 id="reu_prevu">Réunion déja prévu : </h2>
+            <div id="Reunion_fix"></div>
+            <h2 id="reu_sans_horaire">Réunion sans horaires : </h2>
+            <div id="Reunion_flex"></div>
+            <h2 id="réu_invité">Réunion ou vous êtes invité :</h2>
+            <div id="Reunion_invit"></div>
+        </div>
+    </div>
+    <div id="popup-overlay" class="popup-overlay"></div>
+    <div id="modal" class="modal">
+        <div id="display-info"></div>
+        <div id="userType">
+            <input type="text" placeholder="username/email" id="mail_username">
+        </div>
+        <div id="modal-display-button">
+            <button id="modalButton">Fermer</button>
+            <button id="ajouterUtilisateur">Ajouter/Enlevez un utilisateur</button>
+            <button id="modal-quitter">Quitter la reunion</button>
+            <button id="update-res">Mettre a jour votre reponse</button>
+        </div>
+    </div>
+    <div id="modal-conf" class="modal">
+        <label>Voulez vous quittez l'evenement ? </label>
+        <div id="conf-display-button">
+            <button id="conf-cancel">Annuler</button>
+            <button id="conf-quittez">QUITTEZ</button>
+        </div>
+    </div>
+</body>
+</html>
