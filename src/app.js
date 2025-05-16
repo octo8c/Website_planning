@@ -240,9 +240,9 @@ async function reunion(id_reunion) {
     return res;
 }
 
-async function check_new_mdp(mail) {
+async function check_new_mdp(username) {
     const client = await pool.connect();
-    let res = client.query("select * from fpass where mail=$1", [mail]);
+    let res = client.query("select * from fpass where username=$1", [mail]);
     client.release();
     return res.rows[0] != undefined;
 }
@@ -311,6 +311,18 @@ async function checkInvit(id_reunion, mail) {
     client.release();
     return res.rows[0] !== undefined;
 }
+/**
+ * Execute la requete requete sur la base de données et renvoie le resultats de la requete
+ * @param {*} requete la requete a executé
+ * @param {*} list_values la liste de valeur 
+ * @returns le resultats de la requete
+ */
+async function requete(requete,list_values){
+    const client = await pool.connect();
+    let res = await client.query(requete,list_values);
+    client.release();
+    return res.rows;
+}
 
 async function updateMdp(mdp, mail) {
     const client = await pool.connect();
@@ -364,6 +376,7 @@ app.post("/mdpOublie", (req, res) => {
                 res.json({ result: false, message: "Erreur: utilisateur introuvable!" });
             } else {
                 console.log(resultats);
+                requete("insert into fpass values($1)",[req.body.username]).catch(res=>console.log("Il avait déja demandée un nouveau mot de passe"));
                 mail(process.env.MAIL, resultats.mail, "Reinitialisation Mot de passe",
                     "Cliquez sur ce lien pour reinitialisez votre mot de passe : http://localhost:8080/mdp/" + req.body.username)
                     .then(res => console.log("Et le message est ..." + res))
@@ -449,8 +462,9 @@ app.get('/invit/:index/:mail', (req, res) => {//L'id de la reunion
 }
 );
 //recuperez toutes les info des reunion et supprimez les invit quand ils ont clique sur le bouton du fichier invit
-app.get('mdp/:username', (req, res) => {
-    if (check_new_mdp(req.params.username)) {
+app.get('/mdp/:username', (req, res) => {
+    console.log("Coucou c'est moi");
+    if (requete("select * from fpass where username=$1",[req.params.username])!=undefined) {
         res.render('mdp', { send: req.params.username });
     } else {
         //Gerer le cas d'erreur 
@@ -458,14 +472,34 @@ app.get('mdp/:username', (req, res) => {
     console.log("Bonjour " + req.params.username + "Le site est pas encore finis...");
 });
 
-app.post('newmdp', (req, res) => {
-    if (check_new_mdp(mail)) {
-        updateMdp(req.body.pass, req.body.mail)
+app.post('/newmdp', (req, res) => {
+    console.log("Coucou je suis bien la");
+    requete("select * from fpass where username=$1",[req.body.username]).then(res=>{ if(res[0]==undefined){
+        requete("delete from fpass where username=$1",[req.body.username]);
+        requete("update utilisateur set mot_de_passe=$1 where username=$2",[req.body.pass,req.body.username])
             .then(res.json({ ok: true }))
-            .catch(res.json({ ok: false, message: "Erreur lors de la mise a jour" }));
-    } else {
-        res.json({ ok: false, message: "L'adresse mail/n'est pas presente ou n'a pas demande de nouveau mots de passe" });
-    }
+            .catch(err=>res.json({ ok: false, message: "Erreur lors de la mise a jour" }));
+        } else {
+            res.json({ ok: false, message: "L'adresse mail/n'est pas presente ou n'a pas demande de nouveau mots de passe" });
+        }
+    });
+});
+
+app.post('/updateProposition',(req,res)=>{
+    requete("select * from tmp_res where id=$1 and id_reunion=$2",[req.body.id_reunion,req.body.id])
+    .then(res=>{
+        if(res.rows[0]==undefined){
+            requete("insert into tmp_res values($1,$2,$3,$4)",[req.body.id,req.body.horraire,req.body.accepted,req.body.id_reunion])
+            .then(result=>res.json({ok:true}));
+        }else{//Il n'avais pas encore de reponse temporaire
+            requete("update tmp_res horraire=$1 , accepted=$2 where id=$3 and id_reunion=$4",//Si on a pas dis oui on dis non mais on pourrait gagner a une meilleur modelisation a voir si on a pas la flemme
+                [req.body.horraire,req.body.accepted,req.body.id,req.body.id_reunion])
+            .then(result=>res.json({ok:true}));
+        }
+    })
+    .catch(err=>{
+
+    });
 });
 
 app.get('/nbr_reu', (req, res) => {
