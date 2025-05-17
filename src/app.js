@@ -18,10 +18,6 @@ if (process.env.INITIALISED == "false"){
     console.log("erreur, le fichier .env n'est pas rempli, veuillez entrer la commande '/make' pour le re-remplir");
     exit(0);
 }
- 
-
-
-
 
 const pg = require('pg');
 let transporter = nodemailer.createTransport({
@@ -74,7 +70,6 @@ async function operations(username, motdepasse, mail, mode) {
             console.log("impossible d'ajouter l'utilisateur dans la base de donnée");
             return -2;
         }
-        console.log(res.rows[0]);
 
         client.release();
         return res.rows[0].id;//L'utilisateur est bien ajouté
@@ -98,15 +93,10 @@ async function addReunion(req) {
         let red = req.body.red, blue = req.body.blue, green = req.body.green;
         let descr = req.body.description;
 
-        console.log(req.body.creneau);
-
         for (let i = 0; i < req.body.creneau.length; i++) {
             date[i] = req.body.creneau[i][0].d;
-            console.log("date" + date[i]);
             tab_heure[i] = req.body.creneau[i][0].h + ":" + req.body.creneau[i][0].m + ":00";
-            console.log("heure" + tab_heure[i]);
             tab_heure_fin[i] = req.body.creneau[i][1].h + ":" + req.body.creneau[i][1].m + ":00";
-            console.log("heure fin" + tab_heure_fin[i]);
         }
         const client = await pool.connect();
         let tab = [tab_heure, reunion_nom, username, date, tab_heure_fin, red, blue, green, descr];
@@ -139,7 +129,6 @@ async function getReunion(mail) {
     let res_invit = await client.query("select reunion.* from reunion join invite on invite.id_reunion=reunion.id_reunion where invite.mail=$1", [mail]);
     let res_personnal = await client.query("select * from personnal_event where user_mail=$1 ",[mail]);
     client.release();
-    console.log(res_personnal);
     return [res, res_invit,res_personnal];
 }
 
@@ -147,12 +136,10 @@ async function getReunion(mail) {
  * Envoie a tout les utilisateur qui ont passe un certain delai un mail de relance
  */
 function remind_participant(){
-    console.log("Affichage reunion");
     requete("select * from invite",[])
     .then(res=>{
         let d = new Date();
         for (let row of res){
-            console.log("Coucou ces moi");
             let date_row = new Date(row.date_relance);
             if(date_row-d <=0){
                 requete("select * from reunion where id_reunion=$1",[row.id_reunion])
@@ -183,24 +170,8 @@ async function supParticipation(mail, id_reunion, createur) {
     }
     client.release();
 }
-/**
- * Renvoie toutes les info de l'utilisateur 
- * @param {*} id L'id de l'utilisateur a recupere
- * @returns Toutes les info
- */
-async function getInfoUser(id) {
-    const client = await pool.connect();
-    let res = await client.query("select * from utilisateur where id=$1", [id]);
-    client.release();
-    return res.rows[0];
-}
 
-async function getInfoReunion(id_reunion) {
-    const client = await pool.connect();
-    let res = await client.query("select role_reunion,mail from participe where id_reunion=$1", [id_reunion]);
-    client.release();
-    return res;
-}
+
 
 async function invitReunion(username, id, nom_reunion, remove) {
     const client = await pool.connect();
@@ -241,21 +212,13 @@ async function send_mail(from,to,subject,text){
     }
 }
 
-
-async function getUser(username) {
-    const client = await pool.connect();
-    let res = await client.query("select * from utilisateur where username=$1", [username]);
-    client.release();
-    return res.rows[0];
-}
 /**
- * Ajoute tout les utilisateur de la reunion
- * @param {*} req 
+ * Importe l'evenements et l'ajoute a la base de données pour l'afficher
+ * @param {*} req la requete contenant tout les parametres
  */
 async function importPersonnal_event(req) {
-    requete("insert into personnal_event(nom_event,descr,heure,creator_username,date_event,heure_fin,user_mail) values ($1,$2,$3,$4,$5,$6,$7)",
+    requete("insert into personnal_event (nom_event,descr,red,blue,green,heure,creator_username,date_event,heure_fin,user_mail) values ($1,$2,33,97,140,$3,$4,$5,$6,$7)",
         [req.body.nom_reunion,req.body.descr,req.body.heure_debut,req.body.organisateur,req.body.date_debut,req.body.heure_fin,req.body.mail])
-    .catch(err=>console.log(err));
     return 0; 
 }
 /**
@@ -271,19 +234,7 @@ async function resInvit(reponse, mail, id_reunion, horraire) {
         client.query("insert into participe values($1,$2,0)", [id_reunion, mail, horraire]);
     }
 }
-/**
- * Verifie que l'utilisateur a bien été invité a la reunion id_reunion
- * @param {*} id_reunion 
- * @param {*} mail 
- * @returns 
- */
-async function checkInvit(id_reunion, mail) {
-    const client = await pool.connect();
-    console.log("L'id reunion" + id_reunion + "Le mail : " + mail);
-    let res = await client.query("select * from invite where id_reunion=$1 and mail=$2", [id_reunion, mail]);
-    client.release();
-    return res.rows[0] !== undefined;
-}
+
 /**
  * Execute la requete requete sur la base de données et renvoie le resultats de la requete
  * @param {*} requete la requete a executé
@@ -335,16 +286,14 @@ app.post("/login", (req, res) => {
 });
 
 app.post("/mdpOublie", (req, res) => {
-    getUser(req.body.username)
+    requete("select * from utilisateur where username=$1",[req.body.username])
         .then(resultats => {
             if (resultats === undefined) {
                 res.json({ result: false, message: "Erreur: utilisateur introuvable!" });
             } else {
-                console.log(resultats);
                 requete("insert into fpass values($1)",[req.body.username]).catch(res=>console.log("Il avait déja demandée un nouveau mot de passe"));
                 send_mail(process.env.MAIL, resultats.mail, "Reinitialisation Mot de passe",
                     "Cliquez sur ce lien pour reinitialisez votre mot de passe : http://localhost:8080/mdp/" + req.body.username)
-                    .then(res => console.log("Et le message est ..." + res))
                     .catch(err => console.log(err));
                 res.json({ result: true });
             }
@@ -353,7 +302,6 @@ app.post("/mdpOublie", (req, res) => {
 });
 
 app.post('/creation', async (req, res) => {
-    console.log("Les reunion restantes : " + req.body.creneau);
     addReunion(req).then(result => res.json({ result: true })).catch(err => { console.log(err); res.json({ result: false }); });
 });
 
@@ -376,7 +324,7 @@ app.post('/quittez-reunion',(req,res)=>{
 
 app.post('/invit', (req, res) => {
     invitReunion(req.body.username, req.body.id_reunion, req.body.nom_reunion)
-        .then(result => { console.log("L'envoie du mail c'est ...." + result); res.json({ result: result }); })
+        .then(result => {res.json({ result: result }); })
         .catch(err => { console.log("Erreur mail :" + err); res.json({ result: false }); })
 });
 /**
@@ -391,7 +339,9 @@ app.post('/horraireReunion', (req, res) => {
         }))
         .catch(err => { console.log(err); res.json({ err: err }); });
 });
-
+/**
+ * Ecrit dans la base de donées le resultats du choix d'horraire
+ */
 app.post('/resultInvit', (req, res) => {
     resInvit(req.body.reponse, req.body.mail, req.body.id_reunion, req.body.horraire)
         .then(result => res.json({ ok: true }))
@@ -401,11 +351,13 @@ app.post('/resultInvit', (req, res) => {
  * Renvoie les info de l'utilisateur
  */
 app.post('/infoUser', (req, res) => {
-    getInfoUser(req.body.id)
+    requete("select * from utilisateur where id=$1",[req.body.id])
         .then(result => { console.log(result); res.json({ result: result }); })
         .catch(err => { console.log(err); res.json({ result: undefined }) });
 })
-
+/**
+ * Import les reunion stockes dans les fichier ics dans la table personnal evenement
+ */
 app.post('/importReunion', (req, res) => {
     importPersonnal_event(req)
         .then(_result => res.json({ result: true }))
@@ -416,7 +368,7 @@ app.get('/invit/:index/:mail', (req, res) => {//L'id de la reunion
     requete("select * from invite where id_reunion=$1 and mail=$2",[req.params.index, req.params.mail]).then(result => {
         if (result[0]!=undefined) {
             requete("select * from reunion where id_reunion=$1",[req.params.index]).then(result => {
-                res.render("invit", { cons: result.rows[0] });
+                res.render("invit", { cons: result[0] });
             });
         } else {
             res.render("erreur", { nom: req.params.mail });
@@ -426,17 +378,14 @@ app.get('/invit/:index/:mail', (req, res) => {//L'id de la reunion
 );
 //recuperez toutes les info des reunion et supprimez les invit quand ils ont clique sur le bouton du fichier invit
 app.get('/mdp/:username', (req, res) => {
-    console.log("Coucou c'est moi");
     if (requete("select * from fpass where username=$1",[req.params.username])!=undefined) {
         res.render('mdp', { send: req.params.username });
     } else {
         //Gerer le cas d'erreur 
     }
-    console.log("Bonjour " + req.params.username + "Le site est pas encore finis...");
 });
 
 app.post('/newmdp', (req, res) => {
-    console.log("Coucou je suis bien la");
     requete("select * from fpass where username=$1",[req.body.username]).then(res=>{ if(res[0]==undefined){
         requete("delete from fpass where username=$1",[req.body.username]);
         requete("update utilisateur set mot_de_passe=$1 where username=$2",[req.body.pass,req.body.username])
@@ -449,14 +398,15 @@ app.post('/newmdp', (req, res) => {
 });
 
 app.post('/updateProposition',(req,res)=>{
-    requete("select * from tmp_res where id=$1 and id_reunion=$2",[req.body.id_reunion,req.body.id])
-    .then(res=>{
-        if(res.rows[0]==undefined){
-            requete("insert into tmp_res values($1,$2,$3,$4)",[req.body.id,req.body.horraire,req.body.accepted,req.body.id_reunion])
-            .then(result=>res.json({ok:true}));
+    requete("select * from tmp_res where mail=$1 and id_reunion=$2",[req.body.mail,req.body.id_reunion])
+    .then(response=>{
+        if(response[0]===undefined){
+            requete("insert into tmp_res values($1,$2,$3,$4)",[req.body.mail,req.body.horraire,req.body.accepted,req.body.id_reunion])
+            .then(result=>res.json({ok:true}))
+            .catch(err=>console.log(err));
         }else{//Il n'avais pas encore de reponse temporaire
-            requete("update tmp_res horraire=$1 , accepted=$2 where id=$3 and id_reunion=$4",//Si on a pas dis oui on dis non mais on pourrait gagner a une meilleur modelisation a voir si on a pas la flemme
-                [req.body.horraire,req.body.accepted,req.body.id,req.body.id_reunion])
+            requete("update tmp_res set horraire=$1 , accepted=$2 where mail=$3 and id_reunion=$4",//Si on a pas dis oui on dis non mais on pourrait gagner a une meilleur modelisation a voir si on a pas la flemme
+                [req.body.horraire,req.body.accepted,req.body.mail,req.body.id_reunion])
             .then(result=>res.json({ok:true}));
         }
     })
@@ -466,7 +416,15 @@ app.post('/updateProposition',(req,res)=>{
     });
 });
 
-console.log("COudahudabda");
+
+
+app.post('/getTmp_res',(req,res)=>{
+    requete("select * from tmp_res where mail=$1 and id_reunion=$2"
+        ,[req.body.mail,req.body.id_reunion])
+        .then(result=>{console.log(result);res.json({result:result[0]})})
+        .catch(err=>console.log(err));
+        
+});
+
 remind_participant();
-console.log("oe ces bien appelée");
 app.listen(port);

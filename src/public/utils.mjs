@@ -1,6 +1,6 @@
 /**
-     * Prends l'username de l'utilisateur et affiche toutes les reunion auquel il vas avoir lieu dans les prochains jours (tries par ordre d'heure)
-     */
+* Prends l'username de l'utilisateur et affiche toutes les reunion auquel il vas avoir lieu dans les prochains jours (tries par ordre d'heure)
+*/
 export function updateDisplayReunion(mail) {
     post_JSON("getReunion", { mail: mail })
         .then(function (res) {
@@ -14,7 +14,6 @@ export function updateDisplayReunion(mail) {
             var list_date = [];//Liste de liste (chaque liste contient toutes les info de la reunion)
             let ind = 0;
             for (let row of rows) {
-                console.log("Oui il y a bien des resulatts");
                 if (row.heure_fin.length === 1) {
                     let tabFin = row.heure_fin[0].split(":");
                     let tempsMax = parseInt(tabFin[0]) * 60 + parseInt(tabFin[1]);
@@ -45,7 +44,6 @@ export function updateDisplayReunion(mail) {
                 if (rows[list_date[i][0]].heure.length == 0) {
                     continue;
                 }
-                console.log("Oui les reunions sont vrm ajoutés")
                 $("#Reunion_fix").append("<a href =\"\"id=" + rows[list_date[i][0]].id_reunion + " >Reunion a " + rows[list_date[i][0]].heure[0].substring(0, 5) + " , le " + rows[list_date[i][0]].date_reunion[0].substring(0, 10) + ".Createur : " + rows[list_date[i][0]].creator_username + "</a><br>");
                 $("a#" + rows[list_date[i][0]].id_reunion).on('click', function (e) { e.preventDefault(); viewReunion(getCookie("mail"), rows[list_date[i][0]],0); });
             }
@@ -67,33 +65,38 @@ let res = -1;
  */
 export function viewReunion(mail, row, flag) {
     let createur = "";
+    let date = flag==2?row.date_event:row.date_reunion[0];
+    let heure = flag==2?row.heure:row.heure[0];
+    let heure_fin = flag==2?row.heure_fin:row.heure_fin[0];
     if(flag==1){
         $("#update-res").css("display","inline");
         $("#ajouterUtilisateur").css("display","none");
         $("#userType").css("display","none");
+        $("#modal-quitter").css("display","inline");
     }else if(flag==0){
         $("#update-res").css("display","none");
         $("#ajouterUtilisateur").css("display","inline");
         $("#userType").css("display","inline");
+        $("#modal-quitter").css("display","inline");
     }else{
         $("#ajouterUtilisateur").css("display","none");
         $("#userType").css("display","none");
         $("#update-res").css("display","none");
+        $("#modal-quitter").css("display","none");
     }
     $("#display-info").empty();
-    console.log(row + "L'id de la reunion" + row.id_reunion);
-    post_JSON("getInfo", { id_reunion: row.id_reunion , flag : flag })
+    post_JSON("getInfo", { id_reunion: row.id_reunion })
         .then(function (resultats) {
             let participants = "";
             $("#display-info").append("<h3><b>" + (flag==2?row.nom_event:row.nom_reunion) + "</b></h3>");
-            if (row.date_reunion.length === 1) {
-                $("#display-info").append("<p>" + row.date_reunion[0] + "</p><br>");
-                $("#display-info").append("<p>Reunion de " + row.heure[0] + " : " + row.heure_fin[0] + " </p>");
+            if (flag === 2 || row.date_reunion.length === 1) {
+                $("#display-info").append("<p>" + date + "</p><br>");
+                $("#display-info").append("<p>Reunion de " + heure + " : " + heure_fin + " </p>");
             } else {
                 $("#display-info").append("<p>Horraires possibles : </p>");
                 for (let i = 0; i < row.date_reunion.length; i++) {
                     if (flag==0) {
-                        $("#display-info").append("<p>Le" + row.date_reunion[i] + "," + row.heure[i] + "->" + row.heure_fin[i] + "</p>");
+                        $("#display-info").append("<p>Le" + date + "," + row.heure[i] + "->" + row.heure_fin[i] + "</p>");
                     } else if(flag==1) {
                         $("#display-info").append("<button id=invit_" + i + ">Le" + row.date_reunion[i] + "," + row.heure[i] + "->" + row.heure_fin[i] + "</button>");
                         $("#invit_" + i).on('click', function () {
@@ -103,7 +106,7 @@ export function viewReunion(mail, row, flag) {
                 }
             }
             if(flag!==2){
-                for (let participant of resultats.result.rows) {
+                for (let participant of resultats.result) {
                     participants = participants + ", " + participant.mail;
                     if (participant.role_reunion === 2) {
                         createur = participant.mail;
@@ -137,18 +140,17 @@ export function viewReunion(mail, row, flag) {
                 $("#update-res").css("display","none");
                 $("#userType").css("display", "inline");
             });
-            let flag = false;
+            let flag_bool = false;
             $("#ajouterUtilisateur").on('click', function () { //Invite les utilisateurs a la reunion
-                if (!flag) {
+                if (!flag_bool) {
                     $("#userType").css("display", "inline");
-                    flag = true;
+                    flag_bool = true;
                 } else {
                     post_JSON("invit", { username: $("#mail_username").val(), id_reunion: row.id_reunion, nom_reunion: row.nom_reunion })
                         .then(res => {
                             if (!res.result) {
                                 errorMessage("display-info", "Erreur mail pas envoyez");
                             } else {//On update la liste des participants
-                                console.log("Oui j'ai bien ajouté : " + row.id_reunion + "mail : " + mail);
                                 viewReunion(mail, row,0);
                             }
                         })
@@ -168,9 +170,8 @@ export function viewReunion(mail, row, flag) {
             });
 
             $("#update-res").on('click', function () {
-                console.log("Oui c'est bon");
                 post_JSON('updateProposition', { id_reunion: row.id_reunion, horraire: res, 
-                    accepted: $("#rejoindre").is(":checked"), id: getCookie("id") });
+                    accepted: $("#rejoindre").is(":checked"), mail: getCookie("mail") });
                 res = -1;
             });
         });
@@ -251,39 +252,40 @@ export async function updateEventInCalendar(force=false){
 
     post_JSON("getReunion", {mail: getCookie("mail")})
     .then(function(resultat) {
+        $(".event").empty();
         updateViewCalendar(resultat,true);
         updateViewCalendar(resultat,false);
         updateDisplayReunion(getCookie("mail"));
-        if (force==false) setTimeout(updateEventInCalendar, 10000);
+        if (force==false) setTimeout(updateEventInCalendar, 20000);
     });
 }
 
 function updateViewCalendar(resultat,flag){
-    $(".event").empty();
-        let rows = flag ? resultat.res_personnal.rows : resultat.result.rows ;
-        for (let row of rows){
-            console.log(row+"Le flag : "+flag);
-            for (let i=0; i<(flag?row.date_event.length:row.date_reunion.length); i++){ 
-                let date = flag ? new Date(row.date_event[i].substring(0,10).replaceAll("-",","))
-                 : new Date(row.date_reunion[i].substring(0,10).replaceAll("-",","));
-
-                date.setDate(date.getDate()+1) // je ne sais pas pourquoi la base de donnée renvoie une date avec le jour -1
-
-                let borne_min = new Date(new Number($(".agenda-case").first().attr("id")));
-                let borne_max = new Date(new Number($(".agenda-case").last().attr("id")));
-
-                if (date >= borne_min && date <= borne_max){
-                    let calendar_case = $("#"+date.getTime());
-                    if (calendar_case.find(".event").length <= nbr_event_possible_visuellement){
-                        let luminescance = 0.299 * row.red + 0.587 * row.green + 0.114 * row.blue;
-                        calendar_case.find(".event").append("<a href='' id='reu-n"+ row.id_reunion + "h" + row.heure[i].replaceAll(":","W") + "' class='event_unit' style='color:"+ (luminescance > 128 ? "black" : "white") +";background-color:rgb("+row.red+","+row.green+","+row.blue+")'>"+ row.nom_reunion +"</a>");
-                        $("#reu-n"+row.id_reunion+"h"+row.heure[i].replaceAll(":","W")).on("click", function() {
-                            console.log($(this));
-                            viewReunion(getCookie("mail"), row,2);
-                            return false; // empeche la redirection du lien
-                        });
-                    }
+    let rows = flag ? resultat.res_personnal.rows : resultat.result.rows ;
+    for (let row of rows){
+        for (let i=0; i<(flag?1:row.date_reunion.length); i++){ 
+            let date = flag ? new Date(row.date_event.substring(0,10).replaceAll("-",","))
+             : new Date(row.date_reunion[i].substring(0,10).replaceAll("-",","));
+            let heure = flag ? row.heure : row.heure[i];
+            let id = flag ? row.id_event : row.id_reunion;
+            let nom = flag ? row.nom_event : row.nom_reunion;
+            date.setDate(date.getDate()+1) // je ne sais pas pourquoi la base de donnée renvoie une date avec le jour -1
+            let borne_min = new Date(new Number($(".agenda-case").first().attr("id")));
+            let borne_max = new Date(new Number($(".agenda-case").last().attr("id")));
+            if (date >= borne_min && date <= borne_max){
+                let calendar_case = $("#"+date.getTime());
+                if (calendar_case.find(".event").length <= nbr_event_possible_visuellement){
+                    let luminescance = 0.299 * row.red + 0.587 * row.green + 0.114 * row.blue;
+                    calendar_case.find(".event").append("<a href='' id='reu-n"+ id + "h" +(heure.replaceAll(":","W")) +
+                     "' class='event_unit' style='color:"+ (luminescance > 128 ? "black" : "white") +
+                     ";background-color:rgb("+row.red+","+row.green+","+row.blue+")'>"+ nom +"</a>");
+                    $("#reu-n"+id+"h"+(heure.replaceAll(":","W"))).on("click", function() {
+                        console.log($(this));
+                        viewReunion(getCookie("mail"), row,flag?2:0);
+                        return false; // empeche la redirection du lien
+                    });                    
                 }
             }
         }
+    }
 }

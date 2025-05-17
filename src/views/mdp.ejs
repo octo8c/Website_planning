@@ -13,8 +13,9 @@
         <script>//Envoie le nouveau mdp au serveur
             $(document).ready(function(){
                 $("#submit_newmdp").on('click',function(){
-                    console.log("Oui ces bien clique");
-                    $.post('http://localhost:8080/newmdp',{password:$("#new_mdp").val(),username:$(location).attr('href').split('/')[4]})
+                    $.post('http://localhost:8080/newmdp',
+                    {password:$("#new_mdp").val(),
+                    username:$(location).attr('href').split('/')[4]})
                     .then(result=>{
                         if(result.ok){
                             $("body").empty();

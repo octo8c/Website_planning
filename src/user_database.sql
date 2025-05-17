@@ -58,13 +58,12 @@ create table invite(
 );
 
 create table tmp_res(/*Contient les reponses temporaires*/
-    id integer not null , 
+    mail varchar(100) not null , 
     horraire integer , /*L'horraire qu'il peut ou peut ne pas avoir choisi*/
     accepted boolean not null , /*Si il a clique sur oui ou non*/
     id_reunion integer not null , 
-    foreign key (id) references utilisateur (id) on delete cascade,
     foreign key (id_reunion) references reunion(id_reunion) on delete cascade , 
-    primary key (id,id_reunion)
+    primary key (mail,id_reunion)
 );
 create table fpass(
     username varchar (30) not null primary key

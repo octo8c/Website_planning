@@ -38,10 +38,8 @@
         let horraire = -1;
         function handleClick(i){
             $("button#bouton"+horraire).css('border','');
-            console.log(i);
             horraire = i;
             $("button#bouton"+i).css('border','2px solid green');
-            console.log("dauidbadb");
         }
         $(document).ready(function () {
             $("#yes").on('change', function () {
@@ -67,6 +65,21 @@
                     }
                 });
             });
+            $.post('http://localhost:8080/getTmp_res',{
+                mail: $(location).attr('href').split('/')[5],
+                id_reunion: $(location).attr('href').split('/')[4] 
+            })
+            .then(res=>{
+                console.log(res.result.horraire);
+                handleClick(res.result.horraire);
+                if(res.result.accepted){
+                    $("#yes").prop('checked',true);
+                    $("#no").prop('checked',false);
+                }else{
+                    $("#no").prop('checked',true);
+                    $("#yes").prop('checked',false);
+                }
+            })
         });
     </script>
 </body>
