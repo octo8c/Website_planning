@@ -23,6 +23,7 @@ Il faut tout d'abord installer NodeJS si ce n'est pas encore fait, puis npm.
 >```bash
 >make
 >```
+>**!Attention a bien activé l'option d'envoie de mail via l'api sur votre fourniseur de mail!**
 >## Autre commande makefile possible 
 >- **`make reset_all` : au prochain make, vos identifiants PSQL seront réinitialisés avec de nouveaux identifiants et la base de donnée sera aussi reset** 
 >- **`make reset_database` : reset la base de donnée à son état initial**

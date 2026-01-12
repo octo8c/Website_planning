@@ -4,7 +4,6 @@
 export function updateDisplayReunion(mail) {
     post_JSON("getReunion", { mail: mail })
         .then(function (res) {
-            console.log("Ca update pas par ici");
             let rows = res.result.rows;
             let rows_invit = res.result_invit.rows;
             $("#Reunion_fix").empty();
@@ -26,7 +25,6 @@ export function updateDisplayReunion(mail) {
                         ind++;
                     }
                 } else {/*Toutes les reunions qui n'ont pas d'horraires definis */
-                    console.log("Oui il ya bien un ajout");
                     $("#Reunion_flex").append("<a href =\"\"id=" + row.id_reunion + ">Reunion de +" + row.creator_username + "</a><br>");
                     $("a#" + row.id_reunion).on('click', function (e) { e.preventDefault(); viewReunion(getCookie("mail"), row,0); });
                 }

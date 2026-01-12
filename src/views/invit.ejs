@@ -70,7 +70,6 @@
                 id_reunion: $(location).attr('href').split('/')[4] 
             })
             .then(res=>{
-                console.log(res.result.horraire);
                 handleClick(res.result.horraire);
                 if(res.result.accepted){
                     $("#yes").prop('checked',true);

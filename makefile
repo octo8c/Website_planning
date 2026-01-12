@@ -2,8 +2,8 @@ BD_INIT = $(shell grep INITIALISED src/.env | cut -d "=" -f 2)
 PG_MDP = $(shell grep PASSWORD src/.env | cut -d "=" -f 2)
 PG_USER = $(shell grep USER src/.env | cut -d "=" -f 2)
 PG_nameBD = $(shell grep DATABASE src/.env | cut -d "=" -f 2)
-
-
+PG_MAIL = $(shell grep MAIL src/.env | cut -d "=" -f 2)
+PG_PASS = $(shell grep PASS src/.env | cut -d "=" -f 2)
 run : compile
 	clear && cd src && node app.js
 
